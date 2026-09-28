@@ -2,6 +2,10 @@
 
 Fichas para os gestores validarem a classificação das soluções (segmento, jornada, área, maturidade, momento). O gestor se identifica com nome e e-mail, aprova ou reclassifica cada solução, e as respostas ficam salvas no Netlify Blobs.
 
+## Lotes
+
+Cada gestor recebe um lote sorteado com 10% das soluções (25 de 244). O sorteio prioriza as soluções com menos validações, depois as menos reservadas em lotes de outros gestores ainda não respondidos; empates são aleatórios. Assim todas as soluções recebem pelo menos uma validação antes de qualquer uma receber a segunda. O lote fica gravado (o gestor volta e encontra as mesmas soluções) e, ao terminar, ele pode pedir mais um lote em "Quero avaliar mais".
+
 ## Estrutura
 
 - `public/` — site estático (`index.html`, `app.js`, `styles.css`, `filtros.js`, `logo.png`)
@@ -37,3 +41,4 @@ Variáveis de ambiente opcionais (Netlify → Site configuration → Environment
 
 - `EMAILS_PERMITIDOS` — e-mails autorizados, separados por vírgula. Vazio = qualquer e-mail entra.
 - `CHAVE_EXPORTACAO` — se definida, o CSV exige `&chave=<valor>`.
+- `LOTE_PERCENTUAL` — tamanho do lote em % do total de soluções (padrão `10`).

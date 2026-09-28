@@ -1,12 +1,17 @@
 /* API das avaliações — um registro (blob) por gestor, com todas as avaliações dele.
-   GET  /api/avaliacoes?email=x          → avaliações do gestor (para retomar de onde parou)
+   GET  /api/avaliacoes?email=x          → avaliações e lote do gestor (para retomar de onde parou)
    GET  /api/avaliacoes?formato=csv      → todas as avaliações em CSV (Excel)
    POST /api/avaliacoes {acao:'entrar', nome, email}
+   POST /api/avaliacoes {acao:'lote', nome, email, ids}     → sorteia mais um lote para o gestor
    POST /api/avaliacoes {nome, email, solucao, avaliacao}   (avaliacao null = apagar)
+
+   Lote: cada gestor recebe LOTE_PERCENTUAL% das soluções, priorizando as com menos
+   validações, depois as menos reservadas em lotes ainda não respondidos; empates por sorteio.
 
    Variáveis de ambiente opcionais (Netlify → Site configuration → Environment variables):
    EMAILS_PERMITIDOS  lista de e-mails separados por vírgula; vazio = qualquer e-mail entra
-   CHAVE_EXPORTACAO   se definida, o CSV exige ?chave=<valor> */
+   CHAVE_EXPORTACAO   se definida, o CSV exige ?chave=<valor>
+   LOTE_PERCENTUAL    tamanho do lote em % do total de soluções (padrão 10) */
 import { getStore } from '@netlify/blobs';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -39,6 +44,26 @@ function limpaAvaliacao(a) {
     comentario: str(a.comentario, 2000).trim(),
     em: new Date().toISOString(),
   };
+}
+
+// Escolhe as próximas soluções para o gestor: menos validadas primeiro, depois as menos
+// reservadas em lotes de outros gestores ainda sem resposta; empates são sorteados.
+function sorteiaLote(ids, gestores, eu) {
+  const validacoes = {}, reservas = {};
+  for (const g of gestores) {
+    if (g.email === eu.email) continue;
+    for (const id of Object.keys(g.avaliacoes || {})) validacoes[id] = (validacoes[id] || 0) + 1;
+    for (const id of g.lote || []) if (!(g.avaliacoes || {})[id]) reservas[id] = (reservas[id] || 0) + 1;
+  }
+  const jaTem = new Set([...(eu.lote || []), ...Object.keys(eu.avaliacoes || {})]);
+  const pct = Number(process.env.LOTE_PERCENTUAL) > 0 ? Number(process.env.LOTE_PERCENTUAL) : 10;
+  const tamanho = Math.max(1, Math.ceil(ids.length * pct / 100));
+  return ids
+    .filter((id) => !jaTem.has(id))
+    .map((id) => ({ id, v: validacoes[id] || 0, r: reservas[id] || 0, s: Math.random() }))
+    .sort((a, b) => a.v - b.v || a.r - b.r || a.s - b.s)
+    .slice(0, tamanho)
+    .map((x) => x.id);
 }
 
 async function todos(store) {
@@ -88,7 +113,7 @@ export default async (req) => {
     const email = normEmail(url.searchParams.get('email'));
     if (!EMAIL_RE.test(email)) return json({ erro: 'Informe um e-mail válido.' }, 400);
     const g = await store.get(chave(email), { type: 'json' });
-    return json({ avaliacoes: (g && g.avaliacoes) || {} });
+    return json({ avaliacoes: (g && g.avaliacoes) || {}, lote: (g && g.lote) || [] });
   }
 
   if (req.method !== 'POST') return json({ erro: 'Método não permitido.' }, 405);
@@ -102,6 +127,19 @@ export default async (req) => {
   if (!permitido(email)) return json({ erro: 'Este e-mail não está na lista de gestores da validação.' }, 403);
 
   if (body.acao === 'entrar') return json({ ok: true });
+
+  if (body.acao === 'lote') {
+    const ids = [...new Set(Array.isArray(body.ids) ? body.ids.slice(0, 5000).map((x) => str(x, 100)) : [])];
+    const gestores = await todos(store);
+    const eu = gestores.find((x) => x.email === email) || { email, avaliacoes: {} };
+    // quem já avaliou antes de existir lote começa com essas soluções no lote
+    if (!eu.lote) eu.lote = Object.keys(eu.avaliacoes || {});
+    const novos = sorteiaLote(ids, gestores, eu);
+    eu.lote = eu.lote.concat(novos);
+    eu.nome = nome;
+    await store.setJSON(chave(email), eu);
+    return json({ lote: eu.lote, novos });
+  }
 
   const solucao = str(body.solucao, 100);
   if (!solucao) return json({ erro: 'Solução não informada.' }, 400);

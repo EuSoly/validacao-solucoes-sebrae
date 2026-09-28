@@ -8,8 +8,9 @@ function ordered(f,list){var inOpts=f.options.filter(function(o){return list.ind
 function initialSel(sol){var s={};FILTERS.forEach(function(f){s[f.key]=sol.initial[f.key].slice();});return s;}
 function freshCard(sol){return {decision:null,sel:initialSel(sol),comment:''};}
 
-var cards=SOLUCOES.map(freshCard);
-var idx=0; // SOLUCOES.length = tela final
+var deck=[], cards=[]; // deck: lote do gestor (soluções sorteadas pelo servidor, em ordem)
+var idx=0; // deck.length = tela final
+var sorteando=false, semMais=false;
 var hover=null, saving=false, saveError='', animating=false;
 var API='/api/avaliacoes', GESTOR_KEY='validacao-gestor';
 var gestor=null, online=false, fila=Promise.resolve(); // fila: grava uma avaliação por vez
@@ -17,8 +18,8 @@ var sheetEl=document.getElementById('sheet');
 var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function cur(){return cards[idx];}
-function sol(){return SOLUCOES[idx];}
-function changed(i){var c=cards[i],s=SOLUCOES[i];return FILTERS.filter(function(f){return !sameSet(c.sel[f.key]||[],s.initial[f.key]);});}
+function sol(){return deck[idx];}
+function changed(i){var c=cards[i],s=deck[i];return FILTERS.filter(function(f){return !sameSet(c.sel[f.key]||[],s.initial[f.key]);});}
 function avaliadas(){return cards.filter(function(c){return c.decision==='aprovada'||c.decision==='reclassificada';}).length;}
 function firstPending(){return cards.findIndex(function(c){return c.decision===null;});}
 function hasEmpty(){var c=cur();return FILTERS.some(function(f){return c.sel[f.key].length===0;});}
@@ -61,7 +62,7 @@ function rowsHtml(){
 }
 
 function decisionHtml(){
-  var c=cur(),d=c.decision,last=idx===SOLUCOES.length-1,h='';
+  var c=cur(),d=c.decision,last=idx===deck.length-1,h='';
   var nextLbl=last?'Concluir':'Próxima solução →';
   if(d===null){
     h='<div class="stack" style="gap:12px"><span class="label">Parecer</span><div class="decide">'+
@@ -91,14 +92,16 @@ function confirmBarHtml(){
 }
 
 function doneHtml(){
-  var n=avaliadas(),pend=n<SOLUCOES.length;
-  return header()+'<div class="done"><span class="label">Fim do deck</span><h1>Você avaliou '+n+' de '+SOLUCOES.length+' soluções</h1>'+
-    (pend?'<p>Ainda faltam '+(SOLUCOES.length-n)+' soluções. Suas respostas já estão salvas: dá para continuar agora ou depois.</p><div class="actions"><button type="button" class="btn-ghost" data-act="restart">Revisar desde a primeira</button><button type="button" class="next-btn" data-act="pending">Ir para a próxima pendente</button></div>'
-         :'<p>Obrigado! Suas respostas ficaram registradas.</p><button type="button" class="next-btn" data-act="restart">Revisar desde a primeira</button>')+'</div>';
+  if(!deck.length) return header()+'<div class="done"><h1>Não foi possível carregar suas soluções</h1><p>Verifique a internet e recarregue a página.</p></div>';
+  var n=avaliadas(),pend=n<deck.length,h;
+  if(pend) h='<p>Ainda faltam '+(deck.length-n)+' soluções do seu lote. Suas respostas já estão salvas: dá para continuar agora ou depois.</p><div class="actions"><button type="button" class="btn-ghost" data-act="restart">Revisar desde a primeira</button><button type="button" class="next-btn" data-act="pending">Ir para a próxima pendente</button></div>';
+  else if(semMais) h='<p>Obrigado! Você já recebeu todas as soluções da base.</p><button type="button" class="next-btn" data-act="restart">Revisar desde a primeira</button>';
+  else h='<p>Obrigado! Suas respostas ficaram registradas. Se tiver mais um tempinho, pegue outro lote: o sorteio prioriza as soluções que ainda ninguém validou.</p><div class="actions"><button type="button" class="btn-ghost" data-act="restart">Revisar desde a primeira</button><button type="button" class="next-btn" data-act="more"'+(sorteando?' disabled':'')+'>'+(sorteando?'Sorteando…':'Quero avaliar mais')+'</button></div>';
+  return header()+'<div class="done"><span class="label">Fim do lote</span><h1>Você avaliou '+n+' de '+deck.length+' soluções</h1>'+h+(saveError?'<p class="warn">'+esc(saveError)+'</p>':'')+'</div>';
 }
 
 function render(){
-  if(idx>=SOLUCOES.length){sheetEl.innerHTML=doneHtml();renderNav();return;}
+  if(idx>=deck.length){sheetEl.innerHTML=doneHtml();renderNav();return;}
   var s=sol(),c=cur(),editing=c.decision==='editando';
   sheetEl.innerHTML=header()+
     '<div class="body'+(editing?' editing':'')+'"><div class="col">'+
@@ -117,17 +120,17 @@ function renderRowsOnly(){var r=document.getElementById('rows');if(r)r.innerHTML
 
 function renderNav(){
   document.getElementById('prev').disabled=idx===0||animating;
-  document.getElementById('next').disabled=idx>=SOLUCOES.length||animating;
-  document.getElementById('count').textContent=idx<SOLUCOES.length?('Solução '+(idx+1)+' de '+SOLUCOES.length):'Concluído';
+  document.getElementById('next').disabled=idx>=deck.length||animating;
+  document.getElementById('count').textContent=idx<deck.length?('Solução '+(idx+1)+' de '+deck.length):'Concluído';
   var n=avaliadas();
-  document.getElementById('bar-fill').style.width=(100*n/SOLUCOES.length)+'%';
+  document.getElementById('bar-fill').style.width=(100*n/deck.length)+'%';
   document.getElementById('done-count').textContent=n+' avaliadas';
 }
 
 function go(to,dir){
-  if(animating||to<0||to>SOLUCOES.length||to===idx) return;
+  if(animating||to<0||to>deck.length||to===idx) return;
   hover=null;saveError='';
-  var c=idx<SOLUCOES.length?cur():null;
+  var c=idx<deck.length?cur():null;
   if(c&&c.decision==='editando'){c.decision=null;c.sel=initialSel(sol());}
   if(reduce){idx=to;render();window.scrollTo({top:0});return;}
   animating=true;renderNav();
@@ -151,7 +154,7 @@ function post(body){
 var pendentes=0;
 function persist(i,decisao){
   if(!online||!gestor) return;
-  var s=SOLUCOES[i],c=cards[i],avaliacao=null;
+  var s=deck[i],c=cards[i],avaliacao=null;
   if(decisao!==null){
     var sel={};FILTERS.forEach(function(f){sel[f.key]=ordered(f,c.sel[f.key]);});
     avaliacao={decisao:decisao,nomeSolucao:s.nome,classificacao:sel,alterados:changed(i).map(function(f){return f.key;}),comentario:c.comment.trim()};
@@ -182,6 +185,14 @@ document.addEventListener('click',function(e){
   else if(act==='next'){go(i+1,1);}
   else if(act==='restart'){go(0,-1);}
   else if(act==='pending'){var p=firstPending();if(p>=0)go(p,-1);}
+  else if(act==='more'){
+    if(sorteando)return;
+    sorteando=true;saveError='';render();
+    fila=fila.then(pedirLote).then(function(r){
+      var antes=deck.length;aplicaLote(r.lote);semMais=deck.length===antes;
+    }).catch(function(){saveError='Não foi possível sortear mais soluções. Tente de novo em instantes.';})
+      .then(function(){sorteando=false;render();}); // idx já aponta para a 1ª nova, se houver
+  }
 });
 document.addEventListener('input',function(e){if(e.target.id==='comentario')cur().comment=e.target.value;});
 
@@ -224,22 +235,34 @@ document.getElementById('sair').addEventListener('click',function(){
   location.reload();
 });
 
-// Carrega o que este gestor já respondeu e abre na primeira solução pendente.
+function pedirLote(){return post({acao:'lote',nome:gestor.nome,email:gestor.email,ids:SOLUCOES.map(function(s){return s.id;})});}
+// Acrescenta ao deck as soluções do lote que ainda não estão nele (ignora ids que saíram da base).
+function aplicaLote(ids){
+  var porId={},tem={};
+  SOLUCOES.forEach(function(s){porId[s.id]=s;});
+  deck.forEach(function(s){tem[s.id]=true;});
+  ids.forEach(function(id){if(porId[id]&&!tem[id]){tem[id]=true;deck.push(porId[id]);cards.push(freshCard(porId[id]));}});
+}
+
+// Carrega o lote e as respostas deste gestor (sorteia o 1º lote se ainda não tiver) e abre na primeira pendente.
 function start(){
   document.getElementById('login').hidden=true;
   document.getElementById('app').hidden=false;
   document.getElementById('session-nome').textContent=gestor.nome+' ('+gestor.email+')';
-  cards=SOLUCOES.map(freshCard);idx=0;
-  sheetEl.innerHTML=header()+'<div class="done"><p>Carregando suas avaliações…</p></div>';
+  deck=[];cards=[];idx=0;
+  sheetEl.innerHTML=header()+'<div class="done"><p>Carregando suas soluções…</p></div>';
   fetch(API+'?email='+encodeURIComponent(gestor.email),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error();return r.json();}).then(function(d){
-    var av=d.avaliacoes||{};
-    SOLUCOES.forEach(function(s,i){var m=av[s.id];if(!m)return;
-      if(m.decisao==='aprovada')cards[i].decision='aprovada';
-      else if(m.decisao==='nao_aprovada'){cards[i].decision='reclassificada';FILTERS.forEach(function(f){var v=m.classificacao&&m.classificacao[f.key];if(Array.isArray(v)&&v.length)cards[i].sel[f.key]=v.slice();});cards[i].comment=m.comentario||'';}
+    return (d.lote&&d.lote.length?Promise.resolve(d):pedirLote()).then(function(l){
+      aplicaLote(l.lote);
+      var av=d.avaliacoes||{};
+      deck.forEach(function(s,i){var m=av[s.id];if(!m)return;
+        if(m.decisao==='aprovada')cards[i].decision='aprovada';
+        else if(m.decisao==='nao_aprovada'){cards[i].decision='reclassificada';FILTERS.forEach(function(f){var v=m.classificacao&&m.classificacao[f.key];if(Array.isArray(v)&&v.length)cards[i].sel[f.key]=v.slice();});cards[i].comment=m.comentario||'';}
+      });
+      online=true;
+      var p=firstPending();idx=p<0?deck.length:p;
     });
-    online=true;
-    var p=firstPending();idx=p<0?SOLUCOES.length:p;
-  }).catch(function(){online=false;}).then(render);
+  }).catch(function(){online=false;deck=[];cards=[];idx=0;}).then(render);
 }
 
 gestor=readGestor();
