@@ -2,6 +2,5 @@ node_modules/
 .netlify/
 deno.lock
 
-# base de soluções: fica fora do Git (gerar com scripts/gerar_data.py)
+# planilha da base fica fora do Git (public/data.js é gerado dela com scripts/gerar_data.py)
 *.xlsx
-public/data.js

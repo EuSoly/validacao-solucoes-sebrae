@@ -5,7 +5,7 @@ Fichas para os gestores validarem a classificação das soluções (segmento, jo
 ## Estrutura
 
 - `public/` — site estático (`index.html`, `app.js`, `styles.css`, `filtros.js`, `logo.png`)
-- `public/data.js` — soluções; **fora do Git**, gerado da planilha
+- `public/data.js` — soluções, gerado da planilha (a planilha não vai para o Git)
 - `netlify/functions/avaliacoes.mjs` — API em `/api/avaliacoes` (salvar, retomar, exportar CSV)
 - `scripts/gerar_data.py` — gera `public/data.js` a partir da planilha da base final
 
@@ -13,7 +13,6 @@ Fichas para os gestores validarem a classificação das soluções (segmento, jo
 
 ```bash
 npm install
-python scripts/gerar_data.py caminho/BASE_FINAL_SEBRAE_com_precos.xlsx   # pip install openpyxl
 npx netlify-cli dev --port 8899
 ```
 
@@ -21,11 +20,11 @@ Abre em http://localhost:8899. Os dados de teste ficam em `.netlify/` (local, n�
 
 ## Publicar
 
-Como `public/data.js` não está no Git, o deploy é feito pela CLI, a partir da pasta local com o `data.js` gerado:
+O site no Netlify está ligado a este repositório: cada push na `main` republica sozinho.
+Para atualizar a base, gere o `data.js` de novo, faça o commit e dê push:
 
 ```bash
-npx netlify-cli login
-npx netlify-cli deploy --prod
+python scripts/gerar_data.py caminho/BASE_FINAL_SEBRAE_com_precos.xlsx   # pip install openpyxl
 ```
 
 (O arrastar-e-soltar do Netlify não publica functions.)
