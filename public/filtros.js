@@ -1,0 +1,21 @@
+/* =====================================================================
+   FILTROS — Validação de Soluções
+   - FILTERS: filtros e opções possíveis (modo de reclassificação)
+   - LEVELS: definições dos níveis de maturidade (tooltip)
+   As soluções ficam em data.js, gerado da planilha por scripts/gerar_data.py.
+   ===================================================================== */
+var NA='Não se aplica (institucional)';
+var FILTERS=[
+  {key:'segmento',label:'Segmento',options:['Alimentos e Bebidas','Construção Civil','Madeira e Móveis','Metal Mecânica','Têxtil e Vestuário','Multi segmento','Setorial','Fora do escopo']},
+  {key:'jornada',label:'Jornada',options:['Administrativa','Produção',NA]},
+  {key:'area',label:'Área principal',options:['Automação e Digitalização','Automação e Digitalização Industrial','Comercial','Compliance e Obrigações da Empresa','Custos Industriais da Produção','ESG','ESG Operacional e Segurança','Engenharia de Processos','Gestão Estratégica','Gestão Financeira e Controladoria','Gestão de Negócios','Gestão de Operações','Gestão de Operações — Gerencial','Gestão de Pessoas','Inovação','Inovação aplicada à produção','Logística Interna e Materiais','Marketing','PCP e Planejamento da Produção','Qualidade Industrial',NA]},
+  {key:'maturidade',label:'Maturidade empresarial',options:['Nível 1','Nível 2','Nível 3','Nível 4','Nível 5',NA]},
+  {key:'momento',label:'Momento empresarial',options:['Para Quem Quer Ganhar Mercado','Para Quem Quer Ganhar Competitividade','Para Quem Quer Inovar e Digitalizar','Para Quem Quer ESG','Não se aplica (solução institucional)']}
+];
+var LEVELS={
+  'Nível 1':{title:'Nível 1 · Empresa Formal Inicial',range:'até R$ 500 mil/ano',text:'Empresa recém formalizada, ainda buscando sobreviver e conseguir viver do negócio. A gestão é reativa e centralizada no empresário, sem controles financeiros estruturados, e a produção é artesanal ou improvisada, sem indicadores de desempenho. Os principais riscos são mortalidade do negócio, preço mal calculado, baixa qualidade e dependência total do operador.',signal:'ainda mistura dinheiro pessoal e da empresa na mesma conta.'},
+  'Nível 2':{title:'Nível 2 · Empresa Estruturada Inicial',range:'R$ 500 mil a R$ 1,5 mi/ano',text:'Empresa que já parou de apagar incêndio e busca ganhar controle sobre a operação. Aparecem os primeiros controles financeiros e de estoque, com melhorias iniciais de layout e qualidade no chão de fábrica, ainda sem leitura clara de custos. O risco principal é crescer sem estrutura adequada, gerando sobrecarga, gargalos produtivos e perda de controle financeiro.',signal:'já separa PF e PJ, mas ainda não sabe o custo real de cada produto.'},
+  'Nível 3':{title:'Nível 3 · Empresa em Consolidação Operacional',range:'R$ 1,5 mi a R$ 3 mi/ano',text:'Empresa buscando crescer sem perder dinheiro, transformando organização em produtividade. A gestão passa a usar DRE gerencial e dados para decisão, enquanto a produção implanta PCP simples, balanceamento de linha e primeiros indicadores. O risco é a margem ser corroída pelo crescimento, com decisões ainda muito baseadas em percepção.',signal:'já tem DRE gerencial e sabe a margem por produto.'},
+  'Nível 4':{title:'Nível 4 · Empresa Competitiva Estruturada',range:'R$ 3 mi a R$ 6 mi/ano',text:'Empresa focada em converter produtividade em lucro e ganhar liderança de mercado com o que já produz. A gestão estrutura custos industriais, precificação técnica e capital de giro, enquanto a produção já mede eficiência, controla refugo e tem rastreabilidade básica. Os riscos são margens comprimidas e complexidade crescente sem liderança intermediária nem governança suficiente.',signal:'já faz orçamento anual e calcula ponto de equilíbrio.'},
+  'Nível 5':{title:'Nível 5 · Empresa em Escala e Profissionalização',range:'R$ 6 mi a R$ 10 mi/ano',text:'Empresa buscando escalar sem perder o controle, com foco em crescimento estruturado, tecnologia e mercado. A gestão avança para governança corporativa, crédito estruturado e compliance financeiro, enquanto a produção digitaliza apontamentos, integra PCP e se prepara para certificações. Os riscos são perda de controle na escala, dependência de poucos clientes e investimentos mal dimensionados.',signal:'já acessa crédito estruturado e analisa investimento com métricas financeiras como VPL ou TIR.'}
+};

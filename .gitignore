@@ -1,0 +1,7 @@
+node_modules/
+.netlify/
+deno.lock
+
+# base de soluções: fica fora do Git (gerar com scripts/gerar_data.py)
+*.xlsx
+public/data.js

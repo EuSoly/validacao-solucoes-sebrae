@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Validação de Soluções</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<section class="login" id="login" hidden aria-labelledby="login-title">
+  <header class="top"><img src="logo.png" alt="Sebrae Indústria"><div class="top-txt"><b>Ficha de validação de produto</b><span>Mapeamento de Soluções para a Indústria</span></div></header>
+  <form class="login-body" id="login-form" novalidate>
+    <span class="label">Validação de soluções</span>
+    <h1 id="login-title">Identifique-se para começar</h1>
+    <p>Você vai passar pelas soluções uma a uma e dizer se a classificação está certa. Suas respostas ficam salvas a cada ficha, então dá para parar e continuar depois com o mesmo e-mail.</p>
+    <div class="field"><label for="login-nome">Nome</label><input id="login-nome" name="nome" autocomplete="name" required></div>
+    <div class="field"><label for="login-email">E-mail</label><input id="login-email" name="email" type="email" autocomplete="email" required></div>
+    <p class="warn" id="login-erro" hidden></p>
+    <button type="submit" class="next-btn" id="login-btn">Iniciar validação</button>
+  </form>
+</section>
+
+<main id="app" hidden>
+<div class="session"><span>Avaliando como <b id="session-nome"></b></span><button type="button" class="link-btn" id="sair">Trocar de gestor</button></div>
+<nav class="deck-nav" aria-label="Navegação entre soluções">
+  <button type="button" class="nav-btn" id="prev">← Anterior</button>
+  <div class="progress"><span id="count"></span><div class="bar" aria-hidden="true"><span id="bar-fill"></span></div><span id="done-count"></span></div>
+  <button type="button" class="nav-btn" id="next">Próxima →</button>
+</nav>
+<div class="deck"><article class="sheet" id="sheet" aria-live="polite"></article></div>
+</main>
+
+<script src="filtros.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
