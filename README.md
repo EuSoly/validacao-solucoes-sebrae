@@ -8,9 +8,9 @@ Cada gestor recebe um lote sorteado com 10% das soluções (25 de 244). O sortei
 
 ## Estrutura
 
-- `public/` — site estático (`index.html`, `app.js`, `styles.css`, `filtros.js`, `logo.png`)
+- `public/` — site estático: app dos gestores (`index.html`, `app.js`), painel (`admin.html`, `admin.js`, `admin.css`), `styles.css`, `filtros.js`, `logo.png`
 - `public/data.js` — soluções, gerado da planilha (a planilha não vai para o Git)
-- `netlify/functions/avaliacoes.mjs` — API em `/api/avaliacoes` (salvar, retomar, exportar CSV)
+- `netlify/functions/avaliacoes.mjs` — API em `/api/avaliacoes` (salvar, retomar, sortear lote) e `/api/admin` (painel e CSV)
 - `scripts/gerar_data.py` — gera `public/data.js` a partir da planilha da base final
 
 ## Rodar local
@@ -33,12 +33,14 @@ python scripts/gerar_data.py caminho/BASE_FINAL_SEBRAE_com_precos.xlsx   # pip i
 
 (O arrastar-e-soltar do Netlify não publica functions.)
 
-## Resultados
+## Painel
 
-`https://<site>.netlify.app/api/avaliacoes?formato=csv` baixa todas as avaliações (CSV com `;`, abre no Excel).
+`https://<site>.netlify.app/admin.html` — cobertura da base, gestores (com "Liberar pendentes" para devolver à fila as soluções de um lote abandonado, e "Remover" para apagar um gestor e suas respostas), soluções com filtros (sem ninguém, reservadas, validadas, não aprovadas, divergência) e o detalhe de cada parecer. O botão "Baixar CSV" exporta todas as avaliações (`;`, abre no Excel).
+
+Login padrão **admin / admin**, conferido no servidor. Troque antes de divulgar o link.
 
 Variáveis de ambiente opcionais (Netlify → Site configuration → Environment variables):
 
+- `ADMIN_USUARIO` / `ADMIN_SENHA` — login do painel (padrão `admin` / `admin`).
 - `EMAILS_PERMITIDOS` — e-mails autorizados, separados por vírgula. Vazio = qualquer e-mail entra.
-- `CHAVE_EXPORTACAO` — se definida, o CSV exige `&chave=<valor>`.
 - `LOTE_PERCENTUAL` — tamanho do lote em % do total de soluções (padrão `10`).

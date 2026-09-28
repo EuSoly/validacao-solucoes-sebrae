@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Painel da Validação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<section class="login" id="login" hidden aria-labelledby="login-title">
+  <header class="top"><img src="logo.png" alt="Sebrae Indústria"><div class="top-txt"><b>Painel da validação</b><span>Mapeamento de Soluções para a Indústria</span></div></header>
+  <form class="login-body" id="login-form" novalidate>
+    <span class="label">Acesso restrito</span>
+    <h1 id="login-title">Entrar no painel</h1>
+    <div class="field"><label for="login-usuario">Usuário</label><input id="login-usuario" autocomplete="username" required></div>
+    <div class="field"><label for="login-senha">Senha</label><input id="login-senha" type="password" autocomplete="current-password" required></div>
+    <p class="warn" id="login-erro" hidden></p>
+    <button type="submit" class="next-btn" id="login-btn">Entrar</button>
+  </form>
+</section>
+
+<main class="painel" id="painel" hidden>
+  <header class="top painel-top"><img src="logo.png" alt="Sebrae Indústria"><div class="top-txt"><b>Painel da validação</b><span>Mapeamento de Soluções para a Indústria</span></div></header>
+
+  <div class="toolbar">
+    <span class="save-note" id="atualizado"></span>
+    <div class="actions">
+      <button type="button" class="btn-ghost" id="atualizar">Atualizar</button>
+      <button type="button" class="btn-ghost" id="csv">Baixar CSV</button>
+      <button type="button" class="link-btn" id="sair">Sair</button>
+    </div>
+  </div>
+  <p class="warn" id="erro" hidden></p>
+
+  <section class="card" aria-labelledby="cob-title">
+    <h2 class="label" id="cob-title">Cobertura da base</h2>
+    <div class="hero"><strong id="hero-num"></strong><span id="hero-txt"></span></div>
+    <div class="meter" id="meter" role="img"></div>
+    <ul class="legend" id="legend"></ul>
+  </section>
+
+  <section class="kpis" id="kpis" aria-label="Resumo"></section>
+
+  <section class="card" aria-labelledby="ges-title">
+    <h2 id="ges-title">Gestores</h2>
+    <div class="table-wrap"><table class="tabela">
+      <thead><tr><th>Gestor</th><th class="num-col">Lote</th><th class="num-col">Respondidas</th><th class="num-col">Pendentes</th><th class="num-col">Aprovadas</th><th class="num-col">Não aprovadas</th><th>Última atividade</th><th><span class="sr-only">Ações</span></th></tr></thead>
+      <tbody id="gestores"></tbody>
+    </table></div>
+    <p class="empty" id="gestores-vazio" hidden>Nenhum gestor entrou ainda.</p>
+  </section>
+
+  <section class="card" aria-labelledby="sol-title">
+    <div class="sol-head">
+      <h2 id="sol-title">Soluções</h2>
+      <input type="search" id="busca" placeholder="Buscar por nome ou nº" aria-label="Buscar solução">
+    </div>
+    <div class="chips filtros" id="filtros" role="group" aria-label="Filtrar soluções"></div>
+    <div id="solucoes" class="sol-list"></div>
+  </section>
+</main>
+
+<script src="filtros.js"></script>
+<script src="data.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

@@ -1,6 +1,5 @@
 /* API das avaliações — um registro (blob) por gestor, com todas as avaliações dele.
    GET  /api/avaliacoes?email=x          → avaliações e lote do gestor (para retomar de onde parou)
-   GET  /api/avaliacoes?formato=csv      → todas as avaliações em CSV (Excel)
    POST /api/avaliacoes {acao:'entrar', nome, email}
    POST /api/avaliacoes {acao:'lote', nome, email, ids}     → sorteia mais um lote para o gestor
    POST /api/avaliacoes {nome, email, solucao, avaliacao}   (avaliacao null = apagar)
@@ -8,9 +7,16 @@
    Lote: cada gestor recebe LOTE_PERCENTUAL% das soluções, priorizando as com menos
    validações, depois as menos reservadas em lotes ainda não respondidos; empates por sorteio.
 
+   Painel (exige Authorization: Basic usuário:senha do admin):
+   GET  /api/admin                        → todos os gestores, lotes e avaliações
+   GET  /api/admin?formato=csv            → todas as avaliações em CSV (Excel)
+   POST /api/admin {acao:'entrar'}        → só confere o login
+   POST /api/admin {acao:'liberar', email} → devolve para a fila as soluções do lote ainda sem resposta
+   POST /api/admin {acao:'remover', email} → apaga o gestor e as avaliações dele
+
    Variáveis de ambiente opcionais (Netlify → Site configuration → Environment variables):
    EMAILS_PERMITIDOS  lista de e-mails separados por vírgula; vazio = qualquer e-mail entra
-   CHAVE_EXPORTACAO   se definida, o CSV exige ?chave=<valor>
+   ADMIN_USUARIO / ADMIN_SENHA  login do painel (padrão admin / admin — troque antes de divulgar)
    LOTE_PERCENTUAL    tamanho do lote em % do total de soluções (padrão 10) */
 import { getStore } from '@netlify/blobs';
 
@@ -28,6 +34,40 @@ const chave = (email) => Buffer.from(email).toString('base64url'); // só caract
 function permitido(email) {
   const lista = (process.env.EMAILS_PERMITIDOS || '').split(/[,;\s]+/).map(normEmail).filter(Boolean);
   return !lista.length || lista.includes(email);
+}
+
+function adminOk(req) {
+  const [tipo, cred] = (req.headers.get('authorization') || '').split(' ');
+  if (tipo !== 'Basic' || !cred) return false;
+  const txt = Buffer.from(cred, 'base64').toString('utf8');
+  const i = txt.indexOf(':');
+  return i > 0 && txt.slice(0, i) === (process.env.ADMIN_USUARIO || 'admin') && txt.slice(i + 1) === (process.env.ADMIN_SENHA || 'admin');
+}
+
+async function admin(req, store, url) {
+  if (!adminOk(req)) return json({ erro: 'Usuário ou senha inválidos.' }, 401);
+  if (req.method === 'GET') {
+    const gestores = await todos(store);
+    return url.searchParams.get('formato') === 'csv' ? csv(gestores) : json({ gestores });
+  }
+  if (req.method !== 'POST') return json({ erro: 'Método não permitido.' }, 405);
+  let body;
+  try { body = await req.json(); } catch { return json({ erro: 'Requisição inválida.' }, 400); }
+  if (body.acao === 'entrar') return json({ ok: true });
+  const email = normEmail(body.email);
+  const g = await store.get(chave(email), { type: 'json' });
+  if (!g) return json({ erro: 'Gestor não encontrado.' }, 404);
+  if (body.acao === 'liberar') {
+    const antes = (g.lote || []).length;
+    g.lote = (g.lote || []).filter((id) => (g.avaliacoes || {})[id]);
+    await store.setJSON(chave(email), g);
+    return json({ ok: true, liberadas: antes - g.lote.length });
+  }
+  if (body.acao === 'remover') {
+    await store.delete(chave(email));
+    return json({ ok: true });
+  }
+  return json({ erro: 'Ação desconhecida.' }, 400);
 }
 
 function limpaAvaliacao(a) {
@@ -103,13 +143,9 @@ function csv(gestores) {
 export default async (req) => {
   const store = getStore({ name: 'avaliacoes', consistency: 'strong' });
   const url = new URL(req.url);
+  if (url.pathname === '/api/admin') return admin(req, store, url);
 
   if (req.method === 'GET') {
-    if (url.searchParams.get('formato') === 'csv') {
-      const exigida = process.env.CHAVE_EXPORTACAO;
-      if (exigida && url.searchParams.get('chave') !== exigida) return json({ erro: 'Chave inválida.' }, 403);
-      return csv(await todos(store));
-    }
     const email = normEmail(url.searchParams.get('email'));
     if (!EMAIL_RE.test(email)) return json({ erro: 'Informe um e-mail válido.' }, 400);
     const g = await store.get(chave(email), { type: 'json' });
@@ -156,4 +192,4 @@ export default async (req) => {
   return json({ ok: true });
 };
 
-export const config = { path: '/api/avaliacoes' };
+export const config = { path: ['/api/avaliacoes', '/api/admin'] };
