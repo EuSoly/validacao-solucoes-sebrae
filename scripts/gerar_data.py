@@ -5,6 +5,9 @@ Requer: pip install openpyxl
 
 Confere cada valor de classificação contra as opções de public/filtros.js e
 para com erro se algum não existir lá (o modo de reclassificação não o mostraria).
+
+As descrições de scripts/descricoes_sebraetec.json (reescritas a partir das fichas
+técnicas do Sebraetec) substituem a descrição da planilha para os ids listados.
 """
 import json
 import re
@@ -16,6 +19,7 @@ import openpyxl
 RAIZ = Path(__file__).resolve().parent.parent
 FILTROS = RAIZ / 'public' / 'filtros.js'
 DATA = RAIZ / 'public' / 'data.js'
+DESCRICOES = RAIZ / 'scripts' / 'descricoes_sebraetec.json'
 NA = 'Não se aplica (institucional)'
 CABECALHO = '''/* SOLUÇÕES — gerado por scripts/gerar_data.py a partir da planilha da base final.
    Não editar à mão. "id" é a chave das avaliações salvas: precisa ser único e estável. */
@@ -46,6 +50,7 @@ def maturidade(v):
 
 def main(xlsx):
     opts = opcoes_dos_filtros()
+    descricoes = json.loads(DESCRICOES.read_text(encoding='utf-8')) if DESCRICOES.exists() else {}
     wb = openpyxl.load_workbook(xlsx, read_only=True, data_only=True)
     rows = list(wb['Base Final'].iter_rows(values_only=True))
     h = rows[0]
@@ -72,6 +77,13 @@ def main(xlsx):
             'preco': preco(col(r, 'Preço máximo (R$)')),
             'initial': initial,
         })
+
+    for s in sols:
+        if s['id'] in descricoes:
+            s['desc'] = descricoes[s['id']]['desc']
+    desconhecidos = set(descricoes) - {s['id'] for s in sols}
+    if desconhecidos:
+        sys.exit('descricoes_sebraetec.json tem ids que não estão na planilha: ' + ', '.join(sorted(desconhecidos)))
 
     if erros:
         sys.exit('Valores que não existem em filtros.js: ' + repr(erros))

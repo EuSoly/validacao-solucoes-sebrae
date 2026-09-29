@@ -1,0 +1,486 @@
+{
+ "sol-02": {
+  "ficha": "DA21003-2",
+  "desc": "Consultoria de design que projeta um quiosque de vendas para a empresa: diagnóstico do público, do produto e do estilo da marca, seguido do projeto executivo com layout, materiais, iluminação e maquete eletrônica. Ajuda a melhorar a experiência de compra e a vender mais no ponto de venda."
+ },
+ "sol-03": {
+  "ficha": "DA21004-3",
+  "desc": "Consultoria de design que cria o projeto de vitrines e expositores da loja, a partir de um diagnóstico do público, do produto e do estilo da marca, com layout, materiais, iluminação e desenhos técnicos para a montagem. Ajuda a atrair clientes, valorizar os produtos expostos e aumentar as vendas."
+ },
+ "sol-04": {
+  "ficha": "PI45002-3",
+  "desc": "Serviço de propriedade intelectual em que um especialista elabora e protocola no INPI o recurso contra uma exigência ou decisão desfavorável em um pedido de marca, patente ou outro registro da empresa. Evita a perda do pedido e aumenta a chance de garantir a proteção do ativo."
+ },
+ "sol-05": {
+  "ficha": "GS13035-2",
+  "desc": "Consultoria que adequa a produção da empresa ao Caderno de Especificações Técnicas e ao Plano de Controle da Indicação Geográfica (IG) a que ela está vinculada, com diagnóstico, ajustes no processo e registro das evidências exigidas. Permite usar o selo da IG e valorizar o produto pela origem."
+ },
+ "sol-06": {
+  "ficha": "GQ13022-5",
+  "desc": "Consultoria que implanta procedimentos de qualidade em empresas de turismo, com base em normas técnicas e na legislação do setor, e avalia o resultado ao final. Ajuda a padronizar o atendimento, atender às exigências legais e oferecer uma experiência melhor ao turista."
+ },
+ "sol-07": {
+  "ficha": "AAS31007-4",
+  "desc": "Consultoria ambiental que diagnostica o uso da água no empreendimento e propõe um plano para otimizá-lo, com avaliação da eficiência hídrica, aproveitamento de água da chuva e análise de viabilidade técnica e econômica. Reduz o consumo e o custo com água e apoia a regularidade ambiental."
+ },
+ "sol-08": {
+  "ficha": "GI42003-3",
+  "desc": "Consultoria para negócios inovadores que já têm modelo de negócio e protótipo e estão começando a operar, com qualificação e apoio em gestão da inovação, processos, estratégia e acesso a mercado. Ajuda a estruturar a empresa para crescer e se preparar para buscar investimento."
+ },
+ "sol-12": {
+  "ficha": "DP23001-3",
+  "desc": "Consultoria de design que desenvolve uma coleção de produtos para a empresa, da pesquisa de tendências e definição do conceito à criação das peças e sua preparação para produção. Ajuda a lançar coleções com identidade própria, maior valor agregado e mais aderência ao mercado."
+ },
+ "sol-13": {
+  "ficha": "DP23003-4",
+  "desc": "Consultoria de design que cria a embalagem de um produto da empresa, a partir de um briefing, com propostas preliminares, validação dos desenhos e especificações para fabricação. Aplica a identidade visual da marca à embalagem para proteger o produto, comunicar seus atributos e atrair o consumidor."
+ },
+ "sol-14": {
+  "ficha": "DP23002-2",
+  "desc": "Consultoria de design que concebe ou redesenha um produto físico da empresa, como móveis, calçados, joias, máquinas ou objetos, com desenvolvimento do conceito, imagens 3D, vistas, cortes e detalhamento técnico. Ajuda a diferenciar o produto no mercado e prepará-lo para a produção."
+ },
+ "sol-15": {
+  "ficha": "DA21005-5",
+  "desc": "Consultoria de design de interiores e fachada que diagnostica o espaço da empresa e desenvolve o projeto do ambiente, com layout, materiais, iluminação, acessibilidade e maquete eletrônica. Deixa o espaço mais funcional, seguro e atrativo para clientes e colaboradores."
+ },
+ "sol-16": {
+  "ficha": "DS24001-4",
+  "desc": "Consultoria de design de serviços que estuda a experiência dos clientes, gera ideias e redesenha a forma como a empresa presta o serviço, incluindo rotinas e práticas da equipe. Ajuda a aumentar a satisfação e a fidelidade dos clientes e a tornar o atendimento mais ágil."
+ },
+ "sol-17": {
+  "ficha": "DS24002-3",
+  "desc": "Consultoria de experiência do usuário (UX) que avalia como os clientes usam o site, aplicativo ou sistema da empresa, mapeia os problemas e propõe o redesenho da interface. Torna o ambiente digital mais fácil de usar e melhora a relação do cliente com a empresa."
+ },
+ "sol-18": {
+  "ficha": "DC22001-3",
+  "desc": "Consultoria de branding que define o propósito, o posicionamento e a plataforma da marca e desenvolve o conteúdo estratégico que orienta como ela se expressa. Fortalece a identidade da empresa e cria conexões que levam o cliente a escolhê-la na hora da compra."
+ },
+ "sol-19": {
+  "ficha": "DC22005-5",
+  "desc": "Consultoria de design que cria ou redesenha a marca da empresa e suas aplicações, como folhetos, catálogos, folder institucional, infográficos e padrão visual para redes sociais, do conceito à arte-final aprovada. Dá à empresa uma imagem consistente e reconhecível no mercado."
+ },
+ "sol-20": {
+  "ficha": "DC22004-5",
+  "desc": "Consultoria de design que cria os rótulos e os elementos gráficos da embalagem de um produto, a partir de um briefing, com propostas, validação e arte-final pronta para impressão. Deixa o produto mais claro e atrativo para o consumidor, atendendo às informações obrigatórias."
+ },
+ "sol-21": {
+  "ficha": "TD46011-5",
+  "desc": "Consultoria que planeja e produz mídias digitais de comunicação para a empresa, como conteúdos, peças e canais on-line, a partir de um briefing e da estratégia de atuação definida. Amplia a visibilidade da empresa, alcança novos públicos e melhora a comunicação com os clientes."
+ },
+ "sol-22": {
+  "ficha": "TD46005-6",
+  "desc": "Consultoria que diagnostica a empresa e seu mercado e elabora um plano de presença digital e de anúncios pagos (links patrocinados) para divulgar e vender produtos e serviços on-line. Ajuda a atrair novos clientes e melhorar o desempenho comercial com menor custo de marketing."
+ },
+ "sol-23": {
+  "ficha": "TD46009-2",
+  "desc": "Consultoria que diagnostica os canais de venda da empresa (loja física, site, redes sociais e outros) e implanta, em ciclos curtos, a integração entre eles, com indicadores de acompanhamento. Oferece ao cliente a mesma experiência em qualquer canal e melhora o desempenho de vendas."
+ },
+ "sol-24": {
+  "ficha": "TD46008-2",
+  "desc": "Consultoria de SEO que planeja e aplica melhorias no site da empresa para ele aparecer melhor nos resultados de busca do Google, com definição de palavras-chave, ajustes técnicos e monitoramento. Aumenta as visitas ao site e atrai novos clientes sem pagar por anúncios."
+ },
+ "sol-27": {
+  "ficha": "MGB43003-3",
+  "desc": "Consultoria para produtores de frutas que implanta o manejo de moscas-das-frutas com a Técnica do Inseto Estéril (controle autocida), integrada às demais práticas de manejo do pomar. Reduz os ataques da praga e o uso de agrotóxicos, agrega valor à fruta e abre portas para exportação."
+ },
+ "sol-28": {
+  "ficha": "MGB43001-10",
+  "desc": "Serviço de biotecnologia que aplica a fertilização in vitro (FIV) no rebanho, com seleção de doadoras e receptoras, produção e transferência de embriões e diagnóstico de gestação. Acelera o melhoramento genético e aproveita melhor as fêmeas de maior valor."
+ },
+ "sol-29": {
+  "ficha": "MGB43002-9",
+  "desc": "Serviço de biotecnologia que aplica a inseminação artificial em tempo fixo (IATF) no rebanho, com seleção das matrizes, sincronização do cio, inseminação e diagnóstico de gestação. Melhora a eficiência reprodutiva e permite programar nascimentos, acelerando o ganho genético."
+ },
+ "sol-30": {
+  "ficha": "MGB43009-4",
+  "desc": "Serviço que coleta amostras do rebanho leiteiro e realiza avaliações genômicas dos animais, com relatório das predições de desempenho e orientação para seleção e acasalamentos. Permite identificar os melhores animais com mais precisão e anos antes dos métodos tradicionais."
+ },
+ "sol-32": {
+  "ficha": "PT44001-2",
+  "desc": "Estudo que levanta e analisa documentos de patentes sobre uma tecnologia de interesse da empresa para mapear o estado da técnica e as tendências de desenvolvimento. Orienta decisões de pesquisa, desenvolvimento e inovação e ajuda a evitar investir no que já existe."
+ },
+ "sol-33": {
+  "ficha": "PT44002-2",
+  "desc": "Consultoria que elabora o planejamento estratégico tecnológico da empresa, analisando os ambientes interno e externo e definindo prioridades e ações para investir em tecnologia e P&D. Ajuda a decidir melhor onde investir e a responder mais rápido às oportunidades do mercado."
+ },
+ "sol-34": {
+  "ficha": "DP41001-6",
+  "desc": "Consultoria para desenvolver um produto alimentício novo ou melhorar um existente, com pesquisa de mercado e de normas, formulação, testes em cozinha experimental ou planta piloto e ficha técnica do produto. Reduz o tempo e o custo de desenvolvimento e amplia o portfólio da empresa."
+ },
+ "sol-35": {
+  "ficha": "DP41002-3",
+  "desc": "Consultoria tecnológica para desenvolver ou melhorar um produto, com levantamento de requisitos, soluções técnicas, ensaios, prototipagem e elaboração de fichas técnicas. Reduz o tempo e o custo para colocar o produto no mercado e dá acesso a novas tecnologias."
+ },
+ "sol-36": {
+  "ficha": "GI42001-6",
+  "desc": "Consultoria que implanta na empresa uma metodologia de gestão da inovação, trabalhada em ciclos curtos (sprints) com ferramentas práticas, da geração de ideias à implementação. Ao final, a empresa passa a conduzir sozinha seu processo de inovação, com indicadores para acompanhar a evolução."
+ },
+ "sol-37": {
+  "ficha": "PI45004-2",
+  "desc": "Serviço de propriedade intelectual que analisa a viabilidade e protocola no INPI o pedido de registro de desenho industrial de um produto da empresa, protegendo sua forma ou padrão ornamental. Impede que concorrentes copiem o design e valoriza o produto."
+ },
+ "sol-38": {
+  "ficha": "PI45005-3",
+  "desc": "Serviço de propriedade intelectual que prepara e protocola no INPI o registro de um programa de computador (software) desenvolvido pela empresa. Garante prova de autoria, segurança jurídica e proteção contra cópias, facilitando licenciar ou vender o software."
+ },
+ "sol-39": {
+  "ficha": "GQ13001-5",
+  "desc": "Consultoria que avalia as áreas de produção e armazenamento de alimentos e indica as adequações físicas necessárias, como fluxo linear e sem cruzamentos, para atender à legislação sanitária. Prepara a empresa para a fiscalização e para o licenciamento sanitário."
+ },
+ "sol-40": {
+  "ficha": "GQ13007-7",
+  "desc": "Consultoria que adequa agroindústrias às exigências dos serviços de inspeção (municipal, estadual ou federal) para produtos de origem animal ou vegetal, incluindo instalações, processos, formulação e rótulo. Viabiliza o registro dos produtos e a venda legalizada em mercados maiores."
+ },
+ "sol-41": {
+  "ficha": "GQ13062-2",
+  "desc": "Consultoria que diagnostica os produtos da empresa e os adequa aos regulamentos técnicos e às exigências de certificação obrigatória (Inmetro e outros órgãos). Reduz riscos na comercialização e permite vender o produto de forma regular."
+ },
+ "sol-42": {
+  "ficha": "GQ13002-4",
+  "desc": "Consultoria para construtoras que orienta a aplicação da norma ABNT NBR 15575 de desempenho de edificações habitacionais, com avaliações e simulações quando necessário. Ajuda a entregar imóveis que atendem aos requisitos técnicos e reduz riscos de problemas pós-obra."
+ },
+ "sol-43": {
+  "ficha": "GQ13056-2",
+  "desc": "Consultoria que faz a avaliação inicial e implanta o sistema APPCC (Análise de Perigos e Pontos Críticos de Controle) em indústrias e serviços de alimentação, com elaboração dos planos e verificação final. Garante a segurança dos alimentos e atende à legislação e a exigências de certificação."
+ },
+ "sol-44": {
+  "ficha": "GQ13055-5",
+  "desc": "Consultoria que adequa indústrias de cosméticos, higiene pessoal, perfumes e saneantes às boas práticas de fabricação exigidas pela Anvisa, com ajustes nos fluxos e validação de processos. Prepara a empresa para obter a Autorização de Funcionamento e vender de forma regular."
+ },
+ "sol-45": {
+  "ficha": "GQ13012-4",
+  "desc": "Serviço de metrologia que calibra instrumentos e equipamentos de medição da empresa em laboratório, verificando se estão dentro dos padrões e especificações. Garante medições confiáveis, apoia o controle de qualidade e atende a exigências de normas e clientes."
+ },
+ "sol-46": {
+  "ficha": "GQ13010-3",
+  "desc": "Consultoria que integra os sistemas de gestão da empresa, como qualidade, meio ambiente e saúde e segurança, com auditoria interna e apoio no tratamento das não conformidades. Reduz retrabalho e custos e deixa a empresa preparada para certificações."
+ },
+ "sol-47": {
+  "ficha": "GQ13029-3",
+  "desc": "Avaliação do atendimento da empresa por um cliente oculto, que visita ou contata a empresa pessoalmente, por telefone e pelos canais digitais e registra pontos como postura, agilidade e técnica de venda. Aponta onde o atendimento precisa melhorar."
+ },
+ "sol-48": {
+  "ficha": "GQ13015-11",
+  "desc": "Consultoria que elabora ou revisa os rótulos dos alimentos da empresa conforme a legislação, incluindo a tabela de informação nutricional, a declaração de alergênicos e os demais itens obrigatórios. Evita problemas com a fiscalização e passa mais confiança ao consumidor."
+ },
+ "sol-49": {
+  "ficha": "GQ13071-1",
+  "desc": "Consultoria para construtoras que aplica as normas ABNT NBR 14037 e NBR 5674, com a elaboração do manual de uso, operação e manutenção do imóvel e a organização do programa de manutenção da edificação. Padroniza o pós-obra e reduz reclamações e riscos para a construtora."
+ },
+ "sol-50": {
+  "ficha": "GQ13025-3",
+  "desc": "Consultoria para serviços de saúde que diagnostica a organização e implanta os requisitos do Manual Brasileiro de Acreditação (ONA), com gestão da qualidade e auditoria interna. Melhora a segurança do paciente e prepara a instituição para buscar a acreditação."
+ },
+ "sol-52": {
+  "ficha": "CS11002-3",
+  "desc": "Consultoria que organiza o estoque da empresa e implanta rotinas de controle, com levantamento dos itens, giro, tempo de reposição, codificação e armazenagem. Reduz perdas e capital parado e facilita saber o que comprar e quando."
+ },
+ "sol-53": {
+  "ficha": "CS11003-3",
+  "desc": "Consultoria que analisa a cadeia de suprimentos da empresa, das compras à entrega, e padroniza ou reformula as rotinas ineficientes com foco em controle, estoques e prazos. Reduz custos e capital parado e dá mais regularidade à operação."
+ },
+ "sol-54": {
+  "ficha": "CI12012-2",
+  "desc": "Auditoria que verifica se uma empresa de turismo, como meio de hospedagem, agência ou restaurante, atende às normas técnicas e regulamentos do setor em qualidade, sustentabilidade e segurança dos alimentos. O relatório mostra o que já está conforme e o que precisa ser corrigido."
+ },
+ "sol-55": {
+  "ficha": "CI12028-1",
+  "desc": "Serviço de inspeção predial conforme a norma ABNT NBR 16747, em que um profissional vistoria a edificação, identifica falhas e riscos e emite laudo com as recomendações de manutenção. Ajuda a construtora ou o proprietário a prevenir problemas e a atender às exigências técnicas."
+ },
+ "sol-56": {
+  "ficha": "CI12010-4",
+  "desc": "Serviço de avaliação da conformidade que conduz a auditoria de certificação da propriedade agrícola pelo protocolo GlobalGAP de boas práticas. Permite vender para redes varejistas e mercados, inclusive externos, que exigem a certificação."
+ },
+ "sol-57": {
+  "ficha": "MMP14044-2",
+  "desc": "Consultoria para pecuaristas que avalia e classifica os animais e as carcaças, orienta o manejo sanitário e nutricional e acompanha o lote da fazenda ao frigorífico, com foco nas exigências de carne nobre. Ajuda a produzir carcaças mais valorizadas e a receber mais pelo animal."
+ },
+ "sol-58": {
+  "ficha": "MMP14012-2",
+  "desc": "Consultoria que programa e ajusta dispositivos de automação ligados às máquinas, como controladores lógicos programáveis (CLP), conforme as necessidades do processo industrial. Aumenta a eficiência e a precisão da produção e reduz falhas e desperdícios."
+ },
+ "sol-59": {
+  "ficha": "MMP14020-2",
+  "desc": "Avaliação da loja feita por um especialista, que analisa a estrutura física, a exposição dos produtos, o atendimento e a gestão e entrega um relatório com pontos fortes, fracos e recomendações. Ajuda o lojista a melhorar o desempenho comercial."
+ },
+ "sol-60": {
+  "ficha": "MMP14048-4",
+  "desc": "Consultoria para empresas da construção civil que implanta o uso de softwares com a metodologia BIM (modelagem da informação da construção), com definição de processos, configuração e capacitação da equipe. Reduz erros de projeto e de obra e melhora prazos e custos."
+ },
+ "sol-61": {
+  "ficha": "MMP14049-2",
+  "desc": "Consultoria que acompanha a empresa da construção civil no desenvolvimento de um projeto piloto em BIM, orientando a modelagem, a integração das disciplinas e a gestão das informações. Serve para testar e consolidar a metodologia antes de adotá-la em todos os projetos."
+ },
+ "sol-62": {
+  "ficha": "MMP14047-3",
+  "desc": "Consultoria que elabora o plano de implantação do BIM na empresa da construção civil (BIM Mandate), definindo objetivos, usos pretendidos, processos, pessoas, investimentos e etapas da migração. Dá clareza e planejamento para adotar o BIM sem desperdiçar recursos."
+ },
+ "sol-63": {
+  "ficha": "MMP14050-3",
+  "desc": "Serviço de modelagem e simulação em BIM de um projeto da construção civil, como compatibilização entre disciplinas, quantitativos e simulações de desempenho. Antecipa conflitos e erros antes da obra e melhora o controle de custos e prazos."
+ },
+ "sol-64": {
+  "ficha": "MMP14001-9",
+  "desc": "Consultoria para produtores rurais que diagnostica a propriedade e implanta boas práticas agrícolas no manejo do solo, da água, das plantas e dos insumos, além da gestão da atividade. Aumenta a produtividade e a qualidade da produção e reduz o custo por unidade colhida."
+ },
+ "sol-65": {
+  "ficha": "MMP14022-2",
+  "desc": "Consultoria que diagnostica a casa de mel e implanta boas práticas de beneficiamento, com ajustes nas instalações, na higiene e nos procedimentos de manipulação. Garante um mel seguro e de qualidade e ajuda a atender às exigências sanitárias."
+ },
+ "sol-66": {
+  "ficha": "MMP14002-8",
+  "desc": "Consultoria para produtores de leite ou de gado de corte que diagnostica a propriedade e implanta boas práticas em manejo, sanidade, nutrição, bem-estar animal e gestão. Aumenta a qualidade e a segurança da produção e a eficiência da atividade."
+ },
+ "sol-67": {
+  "ficha": "MMP14004-3",
+  "desc": "Consultoria que mede a capacidade produtiva da empresa, identifica gargalos e desbalanceamentos e organiza o uso de mão de obra, máquinas e tempo, com apoio ao planejamento e controle da produção (PCP). Ajuda a produzir mais com os mesmos recursos e a cumprir prazos."
+ },
+ "sol-68": {
+  "ficha": "MMP14009-2",
+  "desc": "Consultoria que implanta códigos de barras nos produtos e embalagens da empresa, da filiação ao padrão GS1 à aplicação e integração nos processos. Permite automatizar vendas, estoque e logística e atender às exigências de supermercados e distribuidores."
+ },
+ "sol-69": {
+  "ficha": "MMP14007-2",
+  "desc": "Consultoria que levanta e calcula o custo de fabricação de cada produto, considerando matéria-prima, mão de obra e custos indiretos. Dá base para definir um preço de venda adequado e para buscar custos mais competitivos."
+ },
+ "sol-70": {
+  "ficha": "MMP14061-3",
+  "desc": "Consultoria que implanta ou reorganiza a operação de delivery da empresa de alimentação, incluindo cardápio, embalagens, preparo dos produtos, logística de entrega e atendimento. Ajuda a vender mais pelo delivery mantendo a qualidade e a satisfação do cliente."
+ },
+ "sol-71": {
+  "ficha": "MMP14062-9",
+  "desc": "Consultoria que elabora o cardápio e/ou as fichas técnicas dos pratos e produtos de empresas de alimentação, com ingredientes, quantidades, rendimento e custo de cada item. Padroniza a produção, evita desperdício e dá base para precificar e controlar o estoque."
+ },
+ "sol-72": {
+  "ficha": "MMP14031-5",
+  "desc": "Consultoria que prepara a empresa para se tornar franqueadora, com avaliação da viabilidade, modelo de negócio, manuais de operação, documentos legais e plano de expansão. Permite crescer por meio de franquias com um modelo replicável e organizado."
+ },
+ "sol-73": {
+  "ficha": "MMP14010-2",
+  "desc": "Consultoria que analisa o fluxo de produção e redesenha a disposição de máquinas, postos de trabalho e materiais na fábrica. Reduz deslocamentos, tempo perdido e desperdício de material e deixa o ambiente de trabalho mais seguro."
+ },
+ "sol-74": {
+  "ficha": "MMP14054-2",
+  "desc": "Consultoria que aplica a metodologia Lean Construction em obras da construção civil, com mapeamento do processo, redução de atividades que não agregam valor e planejamento puxado da produção. Melhora prazo, custo, qualidade e organização do canteiro."
+ },
+ "sol-75": {
+  "ficha": "MMP14021-2",
+  "desc": "Consultoria que aplica a filosofia Lean na propriedade rural, identificando o que gera valor e eliminando desperdícios nos processos de produção e de gestão. Reduz custos e aumenta a produtividade e a qualidade da produção."
+ },
+ "sol-76": {
+  "ficha": "MMP14017-4",
+  "desc": "Consultoria que aplica ferramentas Lean na indústria ou em serviços, como mapeamento do fluxo de valor e eliminação de desperdícios, com um plano de melhorias implantado com a equipe. Traz ganhos rápidos de produtividade, custo, estoque e qualidade."
+ },
+ "sol-77": {
+  "ficha": "MMP14038-2",
+  "desc": "Consultoria para hotéis e pousadas que organiza e padroniza os processos de governança, como limpeza e arrumação das unidades e controle de enxoval e insumos. Melhora a qualidade da hospedagem e o controle de custos e aumenta a satisfação dos hóspedes."
+ },
+ "sol-78": {
+  "ficha": "MMP14023-3",
+  "desc": "Consultoria para apicultores que diagnostica o apiário e orienta o manejo das colmeias, a alimentação, a sanidade e a colheita para aumentar a produção de mel e derivados. Eleva a produtividade e a renda da atividade."
+ },
+ "sol-79": {
+  "ficha": "MMP14013-2",
+  "desc": "Consultoria que implanta o programa 5S na empresa (utilização, organização, limpeza, padronização e disciplina), com diagnóstico, treinamento da equipe e acompanhamento. Deixa o ambiente mais organizado e seguro e melhora a produtividade."
+ },
+ "sol-80": {
+  "ficha": "MMP14014-2",
+  "desc": "Consultoria que implanta o sistema Kanban na empresa, com quadros e cartões para controlar o fluxo de produção, as tarefas ou o estoque. Dá mais visibilidade ao trabalho, reduz desperdícios e perdas e melhora o controle das tarefas."
+ },
+ "sol-81": {
+  "ficha": "MMP14069-1",
+  "desc": "Consultoria para empresas que já são franqueadoras, que estrutura o modelo de gestão da franqueadora, sistematiza os procedimentos da rede e planeja a expansão. Melhora o desempenho das unidades franqueadas e ajuda a expandir a rede com mais controle."
+ },
+ "sol-82": {
+  "ficha": "MMP14035-2",
+  "desc": "Consultoria para produtores de camarão e/ou peixe que diagnostica o cultivo e implanta melhorias no manejo, na alimentação e no monitoramento da qualidade da água e dos animais. Aumenta a produtividade e reduz perdas na produção."
+ },
+ "sol-84": {
+  "ficha": "AAS31006-2",
+  "desc": "Consultoria que levanta e calcula as emissões e remoções de gases de efeito estufa (GEE) da empresa, elaborando o inventário conforme metodologias reconhecidas. Mostra onde a empresa emite mais, apoia a redução de custos e atende a exigências de clientes e mercados."
+ },
+ "sol-85": {
+  "ficha": "AAS31012-2",
+  "desc": "Consultoria para produtores rurais que implanta ou ajusta sistemas de irrigação e o manejo da água e dos fertilizantes, com acompanhamento e avaliação dos resultados. Aumenta a produtividade com menos água e reduz custos e impacto ambiental."
+ },
+ "sol-86": {
+  "ficha": "EE32003-2",
+  "desc": "Consultoria que avalia os motores elétricos da empresa, medindo consumo, carga e eficiência, e indica melhorias como ajustes, substituições ou redimensionamento. Reduz a conta de energia e o risco de falhas nos equipamentos."
+ },
+ "sol-87": {
+  "ficha": "EE32005-4",
+  "desc": "Consultoria que diagnostica o consumo de energia da empresa, identifica desperdícios e propõe medidas de eficiência energética e o uso de fontes alternativas, com análise de viabilidade. Reduz o custo com energia e o impacto ambiental."
+ },
+ "sol-88": {
+  "ficha": "EE32004-3",
+  "desc": "Estudo de viabilidade técnica e econômica para a empresa instalar energia solar fotovoltaica (e, se for o caso, solar térmica), com dimensionamento do sistema e roteiro para o projeto de instalação. Ajuda a decidir o investimento com segurança para gerar a própria energia."
+ },
+ "sol-89": {
+  "ficha": "GS33004-3",
+  "desc": "Consultoria que ajuda a empresa a escolher e aplicar ferramentas e indicadores para medir o impacto social e ambiental do seu negócio. Permite comprovar esse impacto para clientes, parceiros e investidores e diferencia a empresa no mercado."
+ },
+ "sol-90": {
+  "ficha": "GS33006-2",
+  "desc": "Consultoria que elabora o Plano de Controle Ambiental (PCA) exigido pelo órgão licenciador, identificando os impactos da atividade e as medidas para controlá-los. Apoia o licenciamento ambiental do empreendimento."
+ },
+ "sol-91": {
+  "ficha": "GS33002-3",
+  "desc": "Consultoria que analisa o ciclo produtivo da empresa, identifica onde há desperdício de matéria-prima, energia, água ou tempo e implanta ações para reduzi-lo. Diminui custos e aumenta a produção com os mesmos recursos."
+ },
+ "sol-93": {
+  "ficha": "SST35017-2",
+  "desc": "Consultoria que prepara a documentação, os estudos e o projeto de prevenção e combate a incêndio e pânico exigidos pelo Corpo de Bombeiros e acompanha o pedido do alvará. Deixa a empresa regular e o ambiente mais seguro para funcionários e clientes."
+ },
+ "sol-94": {
+  "ficha": "R34004-2",
+  "desc": "Consultoria para propriedades rurais e agroindústrias que levanta a biomassa gerada na atividade e projeta um sistema para aproveitá-la, por exemplo na geração de energia ou na recomposição do solo. Dá destino adequado aos resíduos e reduz custos de operação."
+ },
+ "sol-95": {
+  "ficha": "R34005-3",
+  "desc": "Consultoria que avalia os resíduos orgânicos da propriedade ou da empresa e planeja a implantação de um biodigestor, com estimativa da energia gerada e das emissões de gases de efeito estufa evitadas. Trata os resíduos de forma adequada e pode reduzir o gasto com energia."
+ },
+ "sol-96": {
+  "ficha": "R34007-2",
+  "desc": "Consultoria que elabora um plano de sistema integrado de produção em que os resíduos orgânicos da propriedade são reaproveitados como insumos, por exemplo na adubação. Reduz custos com insumos externos e apoia a produção orgânica e sustentável."
+ },
+ "sol-97": {
+  "ficha": "GI42002-3",
+  "desc": "Consultoria para startups e negócios inovadores em estágio inicial que ajuda a definir e validar o modelo de negócio, a proposta de valor e o produto junto ao mercado. Reduz o risco de investir em algo que o cliente não quer e prepara o negócio para a próxima fase."
+ },
+ "sol-98": {
+  "ficha": "GI42004-3",
+  "desc": "Programa para negócios inovadores com modelo de negócio maduro e potencial de crescimento rápido, com mentorias, conexões, treinamentos e preparação para acessar crédito ou investimento. Ajuda a ganhar tração e escalar as vendas."
+ },
+ "sol-100": {
+  "ficha": "PT44003-3",
+  "desc": "Consultoria que elabora, junto com a empresa, um projeto de inovação para captar recursos em editais e linhas de fomento, reembolsáveis ou não. Aumenta a chance de conseguir financiamento para desenvolver produtos, processos ou tecnologias."
+ },
+ "sol-101": {
+  "ficha": "PI45001-2",
+  "desc": "Serviço de propriedade intelectual que pesquisa nas bases de patentes se a tecnologia já existe, elabora o pedido e o deposita no INPI como patente de invenção ou modelo de utilidade. Garante à empresa o direito exclusivo de explorar a criação e protege contra cópias."
+ },
+ "sol-102": {
+  "ficha": "GQ13004-4",
+  "desc": "Consultoria que implanta na empresa um sistema de gestão da qualidade conforme a norma ABNT NBR ISO 9001:2015, com diagnóstico, documentação dos processos e auditoria interna. Organiza os processos, reduz falhas e prepara a empresa para a certificação."
+ },
+ "sol-103": {
+  "ficha": "GQ13008-4",
+  "desc": "Consultoria que diagnostica a produção e adequa a empresa ou propriedade às regras da produção orgânica, com ajustes no sistema produtivo, nos insumos, nas instalações e nos registros. Prepara o negócio para a certificação e para vender o produto como orgânico."
+ },
+ "sol-104": {
+  "ficha": "GQ13054-2",
+  "desc": "Consultoria que implanta na empresa os requisitos da norma ABNT NBR ISO 27001 de gestão da segurança da informação, com análise de riscos, políticas e controles. Protege os dados da empresa e dos clientes e prepara para a certificação."
+ },
+ "sol-105": {
+  "ficha": "GQ13050-4",
+  "desc": "Consultoria para empresas de turismo de aventura que implanta as normas ABNT NBR ISO 21101, 21102 e 21103, com sistema de gestão da segurança, qualificação dos líderes e informações aos participantes. Reduz riscos das atividades e atende à Lei Geral do Turismo."
+ },
+ "sol-106": {
+  "ficha": "GQ13019-3",
+  "desc": "Consultoria que implanta boas práticas de higiene e segurança dos alimentos em empresas de alimentos e bebidas, com manual e procedimentos operacionais padronizados. Prepara o negócio para obter a licença sanitária ou o registro no serviço de inspeção."
+ },
+ "sol-108": {
+  "ficha": "GQ13070-5",
+  "desc": "Consultoria que adequa a empresa à Lei Geral de Proteção de Dados (LGPD), com inventário dos dados pessoais tratados, análise de riscos, políticas, documentos e orientação da equipe. Reduz o risco de multas e aumenta a confiança de clientes e parceiros."
+ },
+ "sol-109": {
+  "ficha": "GQ13042-2",
+  "desc": "Consultoria para empresas de transporte de cargas que implanta o SASSMAQ, sistema de avaliação em segurança, saúde, meio ambiente e qualidade da Abiquim. Prepara a empresa para a avaliação exigida pela indústria química na contratação de transportadoras."
+ },
+ "sol-110": {
+  "ficha": "CI12003-4",
+  "desc": "Serviço de avaliação da conformidade que realiza a auditoria de certificação do sistema de gestão da qualidade da empresa pela norma ABNT NBR ISO 9001:2015. A certificação é exigida por muitos grandes compradores e é pré-requisito para certificar vários produtos."
+ },
+ "sol-111": {
+  "ficha": "CI12021-3",
+  "desc": "Serviço de avaliação da conformidade que realiza os ensaios e a auditoria para a certificação obrigatória de produtos regulamentados, como os exigidos pelo Inmetro. Permite vender o produto de forma regular e reduz riscos na comercialização."
+ },
+ "sol-112": {
+  "ficha": "CI12015-2",
+  "desc": "Serviço de avaliação que conduz, com a Softex, a auditoria oficial para a empresa obter a certificação no modelo MPS.BR (software, serviços ou gestão de pessoas). Comprova a maturidade dos processos e ajuda a vender para clientes que exigem o modelo."
+ },
+ "sol-113": {
+  "ficha": "CI12007-3",
+  "desc": "Serviço em que uma certificadora credenciada pelo Ministério da Agricultura avalia a produção e emite a certificação de produtos orgânicos. Permite usar o selo de orgânico e dá segurança ao consumidor de que o produto segue os padrões."
+ },
+ "sol-114": {
+  "ficha": "CI12011-2",
+  "desc": "Serviço de avaliação da conformidade que realiza a auditoria de certificação da construtora no PBQP-H (Programa Brasileiro da Qualidade e Produtividade do Habitat). A certificação é exigida para aprovar obras no Minha Casa, Minha Vida e em diversas linhas de financiamento."
+ },
+ "sol-115": {
+  "ficha": "CI12026-1",
+  "desc": "Serviço de avaliação da conformidade que realiza a auditoria de certificação do sistema de gestão da qualidade de fabricantes de dispositivos médicos pela norma ABNT NBR ISO 13485:2016. Comprova a conformidade exigida por órgãos reguladores e clientes do setor de saúde."
+ },
+ "sol-116": {
+  "ficha": "CI12013-2",
+  "desc": "Serviço que realiza a auditoria de acreditação de instituições de saúde pela ONA (Organização Nacional de Acreditação), classificando o serviço em um dos três níveis da metodologia. Atesta a qualidade e a segurança do atendimento para pacientes, convênios e parceiros."
+ },
+ "sol-117": {
+  "ficha": "MMP14003-4",
+  "desc": "Consultoria que mapeia e analisa os processos da empresa, com observação em campo, levantamento de documentos e sistemas, e propõe melhorias com indicadores para controle. Reduz retrabalho e desperdícios e torna a operação mais previsível."
+ },
+ "sol-118": {
+  "ficha": "MMP14015-2",
+  "desc": "Consultoria que implanta o Planejamento e Controle da Produção (PCP) na empresa, organizando a programação, o sequenciamento e o controle da produção. Reduz atrasos, desperdícios e retrabalho e aumenta a eficiência produtiva."
+ },
+ "sol-119": {
+  "ficha": "GS33003-2",
+  "desc": "Consultoria que implanta na empresa um sistema de gestão ambiental conforme a norma ABNT NBR ISO 14001:2015, com levantamento de aspectos e impactos, requisitos legais, procedimentos e auditoria interna. Melhora o desempenho ambiental e prepara para a certificação."
+ },
+ "sol-120": {
+  "ficha": "GS33005-6",
+  "desc": "Consultoria que conduz o processo de licenciamento ambiental da empresa, com análise do enquadramento, reunião dos documentos, estudos complementares e requerimento junto ao órgão ambiental. Permite que o empreendimento funcione de forma regular."
+ },
+ "sol-121": {
+  "ficha": "SST35003-3",
+  "desc": "Consultoria que diagnostica a empresa e implanta um sistema de gestão de saúde e segurança do trabalho conforme a norma ISO 45001 (antiga OHSAS 18001), com política, controle de riscos e documentação. Reduz acidentes e afastamentos e prepara para a certificação."
+ },
+ "sol-122": {
+  "ficha": "R34001-3",
+  "desc": "Consultoria que diagnostica os efluentes líquidos gerados pela empresa e propõe soluções de coleta, tratamento e destinação conforme a legislação ambiental. Regulariza a empresa, evita multas e reduz o impacto ambiental."
+ },
+ "sol-123": {
+  "ficha": "R34002-3",
+  "desc": "Consultoria que elabora o Plano de Gerenciamento de Resíduos Sólidos (PGRS) da empresa, conforme a Política Nacional de Resíduos Sólidos e as exigências locais, com levantamento, segregação, armazenamento e destinação dos resíduos. Atende à legislação e pode reduzir custos com descarte."
+ },
+ "sol-125": {
+  "ficha": "GQ13005-3",
+  "desc": "Consultoria que prepara laboratórios de ensaio e calibração para atender à norma ABNT NBR ISO/IEC 17025:2017, com implantação do sistema de gestão e dos requisitos técnicos. É condição para buscar a acreditação no Inmetro e comprovar a competência técnica do laboratório."
+ },
+ "sol-126": {
+  "ficha": "GQ13047-2",
+  "desc": "Consultoria para empresas de software e serviços de TI que implanta processos conforme o modelo MPS.BR (software, serviços ou gestão de pessoas), com diagnóstico e acompanhamento. Melhora a qualidade das entregas e prepara a empresa para a avaliação oficial do modelo."
+ },
+ "sol-127": {
+  "ficha": "GQ13018-3",
+  "desc": "Consultoria para produtores rurais e distribuidores de frutas, verduras e legumes que implanta boas práticas na produção, na colheita e pós-colheita e no transporte. Melhora a qualidade e a segurança do alimento e prepara para licenças sanitárias, selos e certificações."
+ },
+ "sol-128": {
+  "ficha": "SST35012-11",
+  "desc": "Serviço de saúde e segurança do trabalho que elabora os programas e laudos obrigatórios, como PGR (NR-1), PCMSO, LTCAT e laudos de insalubridade e periculosidade, e orienta o envio das informações ao eSocial. Mantém a empresa regular e protege a saúde dos trabalhadores."
+ },
+ "sol-129": {
+  "ficha": "GQ13006-5",
+  "desc": "Consultoria para construtoras que implanta o sistema de gestão da qualidade exigido pelo PBQP-H (Programa Brasileiro da Qualidade e Produtividade do Habitat), com diagnóstico, procedimentos e controles de obra. Prepara a empresa para a certificação exigida no Minha Casa, Minha Vida e em financiamentos."
+ },
+ "sol-130": {
+  "ficha": "GQ13026-2",
+  "desc": "Consultoria que adequa a propriedade agrícola aos requisitos do protocolo GlobalGAP de boas práticas, com diagnóstico, ajustes e registros exigidos. Prepara o produtor para a auditoria de certificação e para vender a redes varejistas e mercados externos."
+ },
+ "sol-133": {
+  "ficha": "GQ13009-4",
+  "desc": "Consultoria que implanta um sistema de gestão da segurança de alimentos conforme a norma ABNT NBR ISO 22000:2019, com visitas periódicas de especialista para orientar a equipe. Garante o controle dos perigos na produção e prepara a empresa para a certificação."
+ },
+ "sol-134": {
+  "ficha": "AAS31003-3",
+  "desc": "Consultoria que conduz o pedido de outorga de água subterrânea junto ao órgão competente, com diagnóstico da propriedade, estudos técnicos e requerimento. Permite captar água de poço com segurança e dentro da lei, reduzindo o risco de perfurar poços improdutivos."
+ },
+ "sol-173": {
+  "ficha": "AAS31003-3",
+  "desc": "Consultoria que conduz o pedido de outorga de água subterrânea junto ao órgão competente, com diagnóstico da propriedade, estudos técnicos e requerimento. Permite captar água de poço com segurança e dentro da lei, reduzindo o risco de perfurar poços improdutivos."
+ },
+ "sol-245": {
+  "ficha": "GQ13070-5",
+  "desc": "Consultoria que adequa a empresa à Lei Geral de Proteção de Dados (LGPD), com inventário dos dados pessoais tratados, análise de riscos, políticas, documentos e orientação da equipe. Reduz o risco de multas e aumenta a confiança de clientes e parceiros."
+ }
+}
