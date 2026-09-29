@@ -8,6 +8,9 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 function fmt(n){return n.toLocaleString('pt-BR');}
 function pct(n,t){return t?Math.round(100*n/t)+'%':'0%';}
 function fmtTempo(seg){seg=Math.round(seg||0);if(!seg)return '—';var m=Math.floor(seg/60),r=seg%60;return m?(m+' min'+(r?' '+r+' s':'')):r+' s';}
+// Respostas anteriores à medição de tempo não têm tempoSegundos.
+function medido(a){return a.tempoSegundos!=null&&a.tempoSegundos!=='';}
+function tempoTxt(a){return !medido(a)?'não medido':(Number(a.tempoSegundos)>0?fmtTempo(a.tempoSegundos):'menos de 1 s');}
 function media(l){l=l.filter(function(x){return x>0;});return l.length?l.reduce(function(a,b){return a+b;},0)/l.length:0;}
 function fmtData(iso){if(!iso)return '—';try{return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return '—';}}
 function readAuth(){try{return sessionStorage.getItem(AUTH_KEY);}catch(e){return null;}}
@@ -126,6 +129,7 @@ function renderGestores(){
   }).join('');
 }
 
+var ICON_TEMPO='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M10 2h4"/></svg>';
 function tags(x){
   var h='';
   if(x.estado==='livre') h+='<span class="tag tag-livre">Sem ninguém</span>';
@@ -134,6 +138,8 @@ function tags(x){
   if(x.no) h+='<span class="tag tag-no">'+x.no+' não aprovada'+(x.no>1?'s':'')+'</span>';
   if(x.ns) h+='<span class="tag tag-ns">'+x.ns+' não sei</span>';
   if(x.div) h+='<span class="tag tag-div">Divergência</span>';
+  var t=x.aval.filter(function(v){return medido(v.a);}).map(function(v){return Number(v.a.tempoSegundos)||0;});
+  if(t.length) h+='<span class="tag tag-tempo" title="Tempo gasto para responder'+(t.length>1?' (média de '+t.length+' respostas)':'')+'">'+ICON_TEMPO+(t.length>1?'média ':'')+esc(fmtTempo(t.reduce(function(a,b){return a+b;},0)/t.length)||'menos de 1 s').replace('—','menos de 1 s')+'</span>';
   return h;
 }
 
@@ -143,7 +149,7 @@ function detalhe(s,x){
   x.aval.forEach(function(v){
     var a=v.a,okd=a.decisao==='aprovada',nsd=a.decisao==='nao_sei';
     var tag=okd?['tag-ok','Aprovada']:(nsd?['tag-ns','Não sei']:['tag-no','Não aprovada']);
-    h+='<div class="aval"><div class="aval-head"><b>'+esc(v.g.nome)+'</b><span class="tag '+tag[0]+'">'+tag[1]+'</span><time>'+fmtData(a.em)+(a.tempoSegundos?' · '+fmtTempo(a.tempoSegundos):'')+'</time></div>';
+    h+='<div class="aval"><div class="aval-head"><b>'+esc(v.g.nome)+'</b><span class="tag '+tag[0]+'">'+tag[1]+'</span><time>'+fmtData(a.em)+'</time><span class="tempo'+(medido(a)?'':' tempo-nm')+'">'+ICON_TEMPO+'Tempo: '+tempoTxt(a)+'</span></div>';
     if(a.decisao==='nao_aprovada'){
       var alt=Array.isArray(a.alterados)?a.alterados:[];
       FILTERS.forEach(function(f){if(alt.indexOf(f.key)===-1)return;
