@@ -175,7 +175,7 @@ function renderSolucoes(st){
   var lista=SOLUCOES.filter(function(s){return f.f(st[s.id])&&(!q||s.nome.toLowerCase().indexOf(q)!==-1||s.num.indexOf(q.replace(/^0+/,''))!==-1);});
   $('solucoes').innerHTML=lista.length?lista.map(function(s){
     var x=st[s.id];
-    return '<details class="sol" data-id="'+esc(s.id)+'"'+(abertas[s.id]?' open':'')+'><summary><span class="n-sol">Nº '+esc(s.num)+'</span><span class="nome">'+esc(s.nome)+'</span><span class="tags">'+tags(x)+'</span></summary>'+
+    return '<details class="sol" data-id="'+esc(s.id)+'"'+(abertas[s.id]?' open':'')+'><summary><span class="n-sol">Nº '+esc(s.num)+'</span><span class="nome">'+esc(s.nome)+' <span class="origem '+(s.origem==='Sebraetec'?'origem-st':'origem-sb')+'">'+esc(s.origem||'Sebrae')+'</span></span><span class="tags">'+tags(x)+'</span></summary>'+
       '<div class="sol-body">'+detalhe(s,x)+'</div></details>';
   }).join(''):'<p class="empty" style="padding:14px 4px">Nenhuma solução neste filtro.</p>';
 }

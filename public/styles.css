@@ -167,3 +167,14 @@ textarea,.field input{font-size:15px;color:var(--ink);border:1.5px solid var(--l
 @media (hover:none){[data-tip]::after{display:none}}
 [data-tip-align="start"]::after{left:0;transform:none}
 [data-tip-align="end"]::after{left:auto;right:0;transform:none}
+
+/* Tag de origem: Sebrae x Sebraetec */
+.origem{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.02em;padding:3px 10px;border-radius:999px;vertical-align:middle;white-space:nowrap}
+.origem-st{color:var(--brand-ink);background:transparent;border:1.5px solid var(--brand-line)}
+.origem-sb{color:var(--muted);background:transparent;border:1.5px solid var(--line-2)}
+
+/* Como funciona / O que a empresa recebe (fichas Sebraetec) */
+.ficha-bloco{gap:8px}
+.ficha-lista{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px;font-size:15px;line-height:1.5;color:var(--ink-2);max-width:68ch}
+.ficha-lista li::marker{color:var(--brand-ink);font-weight:700}
+.ficha-recebe{list-style:disc}

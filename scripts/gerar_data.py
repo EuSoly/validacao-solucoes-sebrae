@@ -75,12 +75,16 @@ def main(xlsx):
             'nome': str(col(r, 'Solução')).strip(),
             'desc': (col(r, 'Descrição') or 'Sem descrição cadastrada.').strip(),
             'preco': preco(col(r, 'Preço máximo (R$)')),
+            'origem': 'Sebraetec' if col(r, 'Código Sebraetec') else 'Sebrae',  # tag no card
             'initial': initial,
         })
 
     for s in sols:
         if s['id'] in descricoes:
             s['desc'] = descricoes[s['id']]['desc']
+            for campo in ('como', 'recebe'):  # etapas e entregas da ficha, mostradas no card
+                if descricoes[s['id']].get(campo):
+                    s[campo] = descricoes[s['id']][campo]
     desconhecidos = set(descricoes) - {s['id'] for s in sols}
     if desconhecidos:
         sys.exit('descricoes_sebraetec.json tem ids que não estão na planilha: ' + ', '.join(sorted(desconhecidos)))

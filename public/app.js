@@ -63,6 +63,17 @@ function rowsHtml(){
   return h;
 }
 
+// Etapas e entregas da ficha Sebraetec (quando houver), para o gestor entender o escopo.
+function detalhesFicha(s){
+  var h='';
+  if(s.como&&s.como.length) h+='<div class="stack ficha-bloco"><span class="label">Como funciona</span><ol class="ficha-lista">'+s.como.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>';
+  if(s.recebe&&s.recebe.length) h+='<div class="stack ficha-bloco"><span class="label">O que a empresa recebe</span><ul class="ficha-lista ficha-recebe">'+s.recebe.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
+  return h;
+}
+function tagOrigem(s){
+  var st=s.origem==='Sebraetec';
+  return '<span class="origem '+(st?'origem-st':'origem-sb')+'" tabindex="0" data-tip="'+(st?'Serviço do Sebraetec, com ficha técnica e código Sebraetec.':'Solução do portfólio do Sebrae.')+'">'+(st?'Sebraetec':'Sebrae')+'</span>';
+}
 function btnReset(){return '<button type="button" class="btn-sm" data-act="reset" data-tip="Apaga sua resposta desta solução para você responder de novo.">Refazer avaliação</button>';}
 function btnNext(lbl){return '<button type="button" class="next-btn" data-act="next" data-tip="'+(idx===deck.length-1?'Vai para o resumo do seu lote.':'Avança para a próxima solução do lote.')+'">'+lbl+'</button>';}
 
@@ -118,13 +129,13 @@ function render(){
   var s=sol(),c=cur(),editing=c.decision==='editando';
   sheetEl.innerHTML=header()+
     '<div class="body'+(editing?' editing':'')+'"><div class="col">'+
-      '<div class="stack"><div style="display:flex;align-items:center;gap:12px"><span class="label">Solução</span><span class="num">Nº '+esc(s.num)+'</span></div><h1>'+esc(s.nome)+'</h1></div>'+
+      '<div class="stack"><div style="display:flex;align-items:center;gap:12px"><span class="label">Solução</span><span class="num">Nº '+esc(s.num)+'</span>'+tagOrigem(s)+'</div><h1>'+esc(s.nome)+'</h1></div>'+
       '<div class="stack"><span class="label">Descrição</span><p class="desc">'+esc(s.desc)+'</p></div>'+
       '<div class="price"><span class="label">Valor máximo</span><strong>'+esc(s.preco)+'</strong></div>'+
       '<div id="decision">'+decisionHtml()+'</div>'+
     '</div><div class="col"><section class="stack" style="gap:10px" aria-labelledby="lbl-filtros">'+
       '<div class="filters-head"><span class="label" id="lbl-filtros">Classificação nos filtros</span>'+(editing?'<span class="editing-hint">Modo de reclassificação: clique para marcar ou desmarcar</span>':'')+'</div>'+
-      '<div class="rows" id="rows">'+rowsHtml()+'</div></section></div>'+
+      '<div class="rows" id="rows">'+rowsHtml()+'</div></section>'+(editing?'':detalhesFicha(s))+'</div>'+
       (editing?confirmBarHtml():'')+
     '</div><footer class="foot"><span>Sebrae/PR · Mapeamento de Soluções para a Indústria</span><span>Ficha '+esc(s.num)+'</span></footer>';
   renderNav();
