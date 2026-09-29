@@ -120,7 +120,7 @@ function render(){
     '<div class="body'+(editing?' editing':'')+'"><div class="col">'+
       '<div class="stack"><div style="display:flex;align-items:center;gap:12px"><span class="label">Solução</span><span class="num">Nº '+esc(s.num)+'</span></div><h1>'+esc(s.nome)+'</h1></div>'+
       '<div class="stack"><span class="label">Descrição</span><p class="desc">'+esc(s.desc)+'</p></div>'+
-      '<div class="price"><span class="label">Preço</span><strong>'+esc(s.preco)+'</strong></div>'+
+      '<div class="price"><span class="label">Valor máximo</span><strong>'+esc(s.preco)+'</strong></div>'+
       '<div id="decision">'+decisionHtml()+'</div>'+
     '</div><div class="col"><section class="stack" style="gap:10px" aria-labelledby="lbl-filtros">'+
       '<div class="filters-head"><span class="label" id="lbl-filtros">Classificação nos filtros</span>'+(editing?'<span class="editing-hint">Modo de reclassificação: clique para marcar ou desmarcar</span>':'')+'</div>'+

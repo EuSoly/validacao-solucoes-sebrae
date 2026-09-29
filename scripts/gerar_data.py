@@ -36,7 +36,7 @@ def opcoes_dos_filtros():
 
 def preco(v):
     if v in (None, ''):
-        return 'Preço não informado'
+        return 'Valor não informado'
     s = f'{float(v):,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
     return 'R$ ' + s
 
