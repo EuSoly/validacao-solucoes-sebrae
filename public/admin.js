@@ -7,6 +7,8 @@ var $=function(id){return document.getElementById(id);};
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function fmt(n){return n.toLocaleString('pt-BR');}
 function pct(n,t){return t?Math.round(100*n/t)+'%':'0%';}
+function fmtTempo(seg){seg=Math.round(seg||0);if(!seg)return '—';var m=Math.floor(seg/60),r=seg%60;return m?(m+' min'+(r?' '+r+' s':'')):r+' s';}
+function media(l){l=l.filter(function(x){return x>0;});return l.length?l.reduce(function(a,b){return a+b;},0)/l.length:0;}
 function fmtData(iso){if(!iso)return '—';try{return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return '—';}}
 function readAuth(){try{return sessionStorage.getItem(AUTH_KEY);}catch(e){return null;}}
 function saveAuth(v){try{if(v)sessionStorage.setItem(AUTH_KEY,v);else sessionStorage.removeItem(AUTH_KEY);}catch(e){}}
@@ -54,10 +56,11 @@ function consolidar(){
     var x=st[s.id];
     x.aval.sort(function(a,b){return String(b.a.em).localeCompare(String(a.a.em));});
     x.ok=x.aval.filter(function(v){return v.a.decisao==='aprovada';}).length;
-    x.no=x.aval.length-x.ok;
+    x.no=x.aval.filter(function(v){return v.a.decisao==='nao_aprovada';}).length;
+    x.ns=x.aval.filter(function(v){return v.a.decisao==='nao_sei';}).length;
     var novas=x.aval.filter(function(v){return v.a.decisao==='nao_aprovada';}).map(function(v){return JSON.stringify(v.a.classificacao||{});});
     x.div=(x.ok>0&&x.no>0)||novas.some(function(c){return c!==novas[0];});
-    x.estado=x.aval.length?'validada':(x.res.length?'reservada':'livre');
+    x.estado=(x.ok+x.no)?'validada':(x.res.length?'reservada':'livre'); // "não sei" não valida
   });
   return st;
 }
@@ -69,13 +72,15 @@ var FILTROS=[
   {k:'reservada',t:'Reservadas, sem resposta',f:function(x){return x.estado==='reservada';}},
   {k:'validada',t:'Validadas',f:function(x){return x.estado==='validada';}},
   {k:'nao',t:'Com não aprovação',f:function(x){return x.no>0;}},
+  {k:'ns',t:'Com "não sei"',f:function(x){return x.ns>0;}},
   {k:'div',t:'Com divergência',f:function(x){return x.div;}}
 ];
 
 function render(){
   var st=consolidar(),total=SOLUCOES.length;
-  var n={validada:0,reservada:0,livre:0},avTot=0,ok=0,no=0,div=0;
-  SOLUCOES.forEach(function(s){var x=st[s.id];n[x.estado]++;avTot+=x.aval.length;ok+=x.ok;no+=x.no;if(x.div)div++;});
+  var n={validada:0,reservada:0,livre:0},avTot=0,ok=0,no=0,ns=0,div=0,tempos=[];
+  SOLUCOES.forEach(function(s){var x=st[s.id];n[x.estado]++;avTot+=x.aval.length;ok+=x.ok;no+=x.no;ns+=x.ns;if(x.div)div++;
+    x.aval.forEach(function(v){tempos.push(Number(v.a.tempoSegundos)||0);});});
 
   $('hero-num').textContent=pct(n.validada,total);
   $('hero-txt').textContent=fmt(n.validada)+' de '+fmt(total)+' soluções já têm pelo menos uma validação';
@@ -89,9 +94,11 @@ function render(){
     ['Avaliações feitas',avTot,''],
     ['Aprovadas',ok,pct(ok,avTot)+' das avaliações'],
     ['Não aprovadas',no,pct(no,avTot)+' das avaliações'],
-    ['Com divergência',div,'soluções com pareceres diferentes']
+    ['Não sei',ns,'a solução volta para o sorteio'],
+    ['Com divergência',div,'soluções com pareceres diferentes'],
+    ['Tempo médio',fmtTempo(media(tempos)),'por resposta']
   ];
-  $('kpis').innerHTML=kpis.map(function(k){return '<div class="kpi"><span>'+k[0]+'</span><strong>'+fmt(k[1])+'</strong>'+(k[2]?'<small>'+esc(k[2])+'</small>':'')+'</div>';}).join('');
+  $('kpis').innerHTML=kpis.map(function(k){return '<div class="kpi"><span>'+k[0]+'</span><strong>'+(typeof k[1]==='number'?fmt(k[1]):esc(k[1]))+'</strong>'+(k[2]?'<small>'+esc(k[2])+'</small>':'')+'</div>';}).join('');
 
   renderGestores();
   renderSolucoes(st);
@@ -102,18 +109,19 @@ function renderGestores(){
   var rows=gestores.map(function(g){
     var av=g.avaliacoes||{},ids=Object.keys(av),lote=g.lote||[];
     var pend=lote.filter(function(id){return !av[id];}).length;
-    var ok=ids.filter(function(id){return av[id].decisao==='aprovada';}).length;
+    var conta=function(d){return ids.filter(function(id){return av[id].decisao===d;}).length;};
     var ult=ids.map(function(id){return av[id].em;}).sort().pop();
-    return {g:g,lote:lote.length,resp:ids.length,pend:pend,ok:ok,no:ids.length-ok,ult:ult};
+    var tm=media(ids.map(function(id){return Number(av[id].tempoSegundos)||0;}));
+    return {g:g,lote:lote.length,resp:ids.length,pend:pend,ok:conta('aprovada'),no:conta('nao_aprovada'),ns:conta('nao_sei'),tm:tm,ult:ult};
   }).sort(function(a,b){return String(b.ult||'').localeCompare(String(a.ult||''));});
   $('gestores-vazio').hidden=rows.length>0;
   $('gestores').innerHTML=rows.map(function(r){
     return '<tr><td><b>'+esc(r.g.nome)+'</b><small>'+esc(r.g.email)+'</small></td>'+
       '<td class="num-col">'+r.lote+'</td><td class="num-col">'+r.resp+'</td><td class="num-col">'+r.pend+'</td>'+
-      '<td class="num-col">'+r.ok+'</td><td class="num-col">'+r.no+'</td><td>'+fmtData(r.ult)+'</td>'+
+      '<td class="num-col">'+r.ok+'</td><td class="num-col">'+r.no+'</td><td class="num-col">'+r.ns+'</td><td class="num-col">'+fmtTempo(r.tm)+'</td><td>'+fmtData(r.ult)+'</td>'+
       '<td><div class="row-actions">'+
-        '<button type="button" class="btn-mini" data-liberar="'+esc(r.g.email)+'"'+(r.pend?'':' disabled')+' title="Devolve para a fila as soluções do lote ainda sem resposta">Liberar pendentes</button>'+
-        '<button type="button" class="btn-mini danger" data-remover="'+esc(r.g.email)+'" data-nome="'+esc(r.g.nome)+'">Remover</button>'+
+        '<button type="button" class="btn-mini" data-liberar="'+esc(r.g.email)+'"'+(r.pend?'':' disabled')+' data-tip-align="end" data-tip="Devolve para a fila as soluções do lote desta pessoa que ainda estão sem resposta. As respostas dadas continuam.">Liberar pendentes</button>'+
+        '<button type="button" class="btn-mini danger" data-remover="'+esc(r.g.email)+'" data-nome="'+esc(r.g.nome)+'" data-tip-align="end" data-tip="Apaga esta pessoa e todas as respostas dela. Use para limpar testes. Não pode ser desfeito.">Remover</button>'+
       '</div></td></tr>';
   }).join('');
 }
@@ -124,6 +132,7 @@ function tags(x){
   if(x.res.length) h+='<span class="tag tag-res">'+x.res.length+' reservada'+(x.res.length>1?'s':'')+'</span>';
   if(x.ok) h+='<span class="tag tag-ok">'+x.ok+' aprovada'+(x.ok>1?'s':'')+'</span>';
   if(x.no) h+='<span class="tag tag-no">'+x.no+' não aprovada'+(x.no>1?'s':'')+'</span>';
+  if(x.ns) h+='<span class="tag tag-ns">'+x.ns+' não sei</span>';
   if(x.div) h+='<span class="tag tag-div">Divergência</span>';
   return h;
 }
@@ -132,9 +141,10 @@ function detalhe(s,x){
   var h='';
   if(!x.aval.length) h+='<p class="empty">Ninguém avaliou ainda.</p>';
   x.aval.forEach(function(v){
-    var a=v.a,okd=a.decisao==='aprovada';
-    h+='<div class="aval"><div class="aval-head"><b>'+esc(v.g.nome)+'</b><span class="tag '+(okd?'tag-ok':'tag-no')+'">'+(okd?'Aprovada':'Não aprovada')+'</span><time>'+fmtData(a.em)+'</time></div>';
-    if(!okd){
+    var a=v.a,okd=a.decisao==='aprovada',nsd=a.decisao==='nao_sei';
+    var tag=okd?['tag-ok','Aprovada']:(nsd?['tag-ns','Não sei']:['tag-no','Não aprovada']);
+    h+='<div class="aval"><div class="aval-head"><b>'+esc(v.g.nome)+'</b><span class="tag '+tag[0]+'">'+tag[1]+'</span><time>'+fmtData(a.em)+(a.tempoSegundos?' · '+fmtTempo(a.tempoSegundos):'')+'</time></div>';
+    if(a.decisao==='nao_aprovada'){
       var alt=Array.isArray(a.alterados)?a.alterados:[];
       FILTERS.forEach(function(f){if(alt.indexOf(f.key)===-1)return;
         var novo=(a.classificacao&&a.classificacao[f.key])||[];
@@ -153,7 +163,7 @@ function renderSolucoes(st){
   var f=FILTROS.filter(function(x){return x.k===filtro;})[0];
   $('filtros').innerHTML=FILTROS.map(function(x){
     var c=SOLUCOES.filter(function(s){return x.f(st[s.id]);}).length;
-    return '<button type="button" class="opt" data-filtro="'+x.k+'" aria-pressed="'+(x.k===filtro)+'">'+esc(x.t)+'<span class="n">'+c+'</span></button>';
+    return '<button type="button" class="opt" data-filtro="'+x.k+'" aria-pressed="'+(x.k===filtro)+'" data-tip="Mostra só as soluções: '+esc(x.t.toLowerCase())+'.">'+esc(x.t)+'<span class="n">'+c+'</span></button>';
   }).join('');
   var q=busca.trim().toLowerCase();
   var lista=SOLUCOES.filter(function(s){return f.f(st[s.id])&&(!q||s.nome.toLowerCase().indexOf(q)!==-1||s.num.indexOf(q.replace(/^0+/,''))!==-1);});

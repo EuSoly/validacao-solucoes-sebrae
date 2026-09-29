@@ -2,9 +2,17 @@
 
 Fichas para os gestores validarem a classificação das soluções (segmento, jornada, área, maturidade, momento). O gestor se identifica com nome e e-mail, aprova ou reclassifica cada solução, e as respostas ficam salvas no Netlify Blobs.
 
-## Lotes
+## Lotes e respostas
 
-Cada gestor recebe um lote sorteado com 10% das soluções (25 de 244). O sorteio prioriza as soluções com menos validações, depois as menos reservadas em lotes de outros gestores ainda não respondidos; empates são aleatórios. Assim todas as soluções recebem pelo menos uma validação antes de qualquer uma receber a segunda. O lote fica gravado (o gestor volta e encontra as mesmas soluções) e, ao terminar, ele pode pedir mais um lote em "Quero avaliar mais".
+Cada gestor recebe um lote sorteado de 10 soluções. O sorteio prioriza as soluções com menos validações, depois as menos reservadas em lotes de outros gestores ainda não respondidos; empates são aleatórios. O lote fica gravado (o gestor volta e encontra as mesmas soluções) e, ao terminar, ele pode pedir outro em "Quero avaliar mais".
+
+Para cada solução o gestor responde:
+
+- **Aprovada** — a classificação está certa.
+- **Não aprovada** — corrige os filtros; só confirma se alterar pelo menos um filtro ou escrever um comentário.
+- **Não sei avaliar** — fica registrado, mas não conta como validação: a solução volta para o sorteio e vai para outro gestor (nunca de novo para quem disse "não sei").
+
+O app mede o tempo de cada resposta (só com a ficha na tela, a aba visível e alguém mexendo; pausa depois de 2 min parado). Aparece no painel e no CSV.
 
 ## Estrutura
 
@@ -43,4 +51,4 @@ Variáveis de ambiente opcionais (Netlify → Site configuration → Environment
 
 - `ADMIN_USUARIO` / `ADMIN_SENHA` — login do painel (padrão `admin` / `admin`).
 - `EMAILS_PERMITIDOS` — e-mails autorizados, separados por vírgula. Vazio = qualquer e-mail entra.
-- `LOTE_PERCENTUAL` — tamanho do lote em % do total de soluções (padrão `10`).
+- `LOTE_TAMANHO` — soluções por lote (padrão `10`).

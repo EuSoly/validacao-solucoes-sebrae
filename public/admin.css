@@ -73,3 +73,5 @@
   .sol-body{padding-left:4px}
   .sol-head input{min-width:0;width:100%}
 }
+.tag-ns{color:var(--ink-2);background:var(--chip);border:1.5px dashed var(--chip-off-line)}
+.table-wrap [data-tip]::after{left:auto;right:calc(100% + 8px);bottom:auto;top:50%;transform:translateY(-50%)}

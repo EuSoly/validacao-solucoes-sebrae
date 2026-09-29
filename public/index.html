@@ -18,16 +18,16 @@
     <div class="field"><label for="login-nome">Nome</label><input id="login-nome" name="nome" autocomplete="name" required></div>
     <div class="field"><label for="login-email">E-mail</label><input id="login-email" name="email" type="email" autocomplete="email" required></div>
     <p class="warn" id="login-erro" hidden></p>
-    <button type="submit" class="next-btn" id="login-btn">Iniciar validação</button>
+    <button type="submit" class="next-btn" id="login-btn" data-tip="Começa (ou continua) a validação com este nome e e-mail.">Iniciar validação</button>
   </form>
 </section>
 
 <main id="app" hidden>
-<div class="session"><span>Avaliando como <b id="session-nome"></b></span><button type="button" class="link-btn" id="sair">Trocar de gestor</button></div>
+<div class="session"><span>Avaliando como <b id="session-nome"></b></span><button type="button" class="link-btn" id="sair" data-tip-align="end" data-tip="Sai desta conta para outra pessoa entrar. Suas respostas continuam salvas." data-tip-pos="bottom">Trocar de gestor</button></div>
 <nav class="deck-nav" aria-label="Navegação entre soluções">
-  <button type="button" class="nav-btn" id="prev">← Anterior</button>
+  <button type="button" class="nav-btn" id="prev" data-tip-align="start" data-tip="Volta para a solução anterior do lote." data-tip-pos="bottom">← Anterior</button>
   <div class="progress"><span id="count"></span><div class="bar" aria-hidden="true"><span id="bar-fill"></span></div><span id="done-count"></span></div>
-  <button type="button" class="nav-btn" id="next">Próxima →</button>
+  <button type="button" class="nav-btn" id="next" data-tip-align="end" data-tip="Pula para a próxima solução sem responder esta." data-tip-pos="bottom">Próxima →</button>
 </nav>
 <div class="deck"><article class="sheet" id="sheet" aria-live="polite"></article></div>
 </main>

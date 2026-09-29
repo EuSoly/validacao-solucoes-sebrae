@@ -19,7 +19,7 @@
     <div class="field"><label for="login-usuario">Usuário</label><input id="login-usuario" autocomplete="username" required></div>
     <div class="field"><label for="login-senha">Senha</label><input id="login-senha" type="password" autocomplete="current-password" required></div>
     <p class="warn" id="login-erro" hidden></p>
-    <button type="submit" class="next-btn" id="login-btn">Entrar</button>
+    <button type="submit" class="next-btn" id="login-btn" data-tip="Entra no painel com o usuário e a senha de administrador.">Entrar</button>
   </form>
 </section>
 
@@ -29,9 +29,9 @@
   <div class="toolbar">
     <span class="save-note" id="atualizado"></span>
     <div class="actions">
-      <button type="button" class="btn-ghost" id="atualizar">Atualizar</button>
-      <button type="button" class="btn-ghost" id="csv">Baixar CSV</button>
-      <button type="button" class="link-btn" id="sair">Sair</button>
+      <button type="button" class="btn-ghost" id="atualizar" data-tip="Busca as respostas mais recentes. O painel também atualiza sozinho a cada minuto." data-tip-pos="bottom">Atualizar</button>
+      <button type="button" class="btn-ghost" id="csv" data-tip="Baixa todas as respostas em planilha (CSV), com parecer, mudanças, comentário e tempo." data-tip-pos="bottom">Baixar CSV</button>
+      <button type="button" class="link-btn" id="sair" data-tip-align="end" data-tip="Sai do painel neste navegador." data-tip-pos="bottom">Sair</button>
     </div>
   </div>
   <p class="warn" id="erro" hidden></p>
@@ -48,7 +48,7 @@
   <section class="card" aria-labelledby="ges-title">
     <h2 id="ges-title">Gestores</h2>
     <div class="table-wrap"><table class="tabela">
-      <thead><tr><th>Gestor</th><th class="num-col">Lote</th><th class="num-col">Respondidas</th><th class="num-col">Pendentes</th><th class="num-col">Aprovadas</th><th class="num-col">Não aprovadas</th><th>Última atividade</th><th><span class="sr-only">Ações</span></th></tr></thead>
+      <thead><tr><th>Gestor</th><th class="num-col">Lote</th><th class="num-col">Respondidas</th><th class="num-col">Pendentes</th><th class="num-col">Aprovadas</th><th class="num-col">Não aprovadas</th><th class="num-col">Não sei</th><th class="num-col">Tempo médio</th><th>Última atividade</th><th><span class="sr-only">Ações</span></th></tr></thead>
       <tbody id="gestores"></tbody>
     </table></div>
     <p class="empty" id="gestores-vazio" hidden>Nenhum gestor entrou ainda.</p>

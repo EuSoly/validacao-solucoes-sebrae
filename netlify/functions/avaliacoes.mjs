@@ -4,8 +4,9 @@
    POST /api/avaliacoes {acao:'lote', nome, email, ids}     → sorteia mais um lote para o gestor
    POST /api/avaliacoes {nome, email, solucao, avaliacao}   (avaliacao null = apagar)
 
-   Lote: cada gestor recebe LOTE_PERCENTUAL% das soluções, priorizando as com menos
-   validações, depois as menos reservadas em lotes ainda não respondidos; empates por sorteio.
+   Lote: cada gestor recebe LOTE_TAMANHO soluções por vez, priorizando as com menos
+   validações (aprovada/não aprovada — "não sei" não conta), depois as menos reservadas
+   em lotes ainda não respondidos; empates por sorteio.
 
    Painel (exige Authorization: Basic usuário:senha do admin):
    GET  /api/admin                        → todos os gestores, lotes e avaliações
@@ -17,7 +18,7 @@
    Variáveis de ambiente opcionais (Netlify → Site configuration → Environment variables):
    EMAILS_PERMITIDOS  lista de e-mails separados por vírgula; vazio = qualquer e-mail entra
    ADMIN_USUARIO / ADMIN_SENHA  login do painel (padrão admin / admin — troque antes de divulgar)
-   LOTE_PERCENTUAL    tamanho do lote em % do total de soluções (padrão 10) */
+   LOTE_TAMANHO       soluções por lote (padrão 10) */
 import { getStore } from '@netlify/blobs';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -71,7 +72,7 @@ async function admin(req, store, url) {
 }
 
 function limpaAvaliacao(a) {
-  if (a.decisao !== 'aprovada' && a.decisao !== 'nao_aprovada') return null;
+  if (!['aprovada', 'nao_aprovada', 'nao_sei'].includes(a.decisao)) return null;
   const classificacao = {};
   if (a.classificacao && typeof a.classificacao === 'object') {
     for (const k of Object.keys(a.classificacao).slice(0, 20)) classificacao[str(k, 50)] = strList(a.classificacao[k]);
@@ -82,6 +83,7 @@ function limpaAvaliacao(a) {
     classificacao,
     alterados: strList(a.alterados),
     comentario: str(a.comentario, 2000).trim(),
+    tempoSegundos: Math.min(86400, Math.max(0, Math.round(Number(a.tempoSegundos) || 0))),
     em: new Date().toISOString(),
   };
 }
@@ -92,12 +94,11 @@ function sorteiaLote(ids, gestores, eu) {
   const validacoes = {}, reservas = {};
   for (const g of gestores) {
     if (g.email === eu.email) continue;
-    for (const id of Object.keys(g.avaliacoes || {})) validacoes[id] = (validacoes[id] || 0) + 1;
+    for (const [id, a] of Object.entries(g.avaliacoes || {})) if (a.decisao !== 'nao_sei') validacoes[id] = (validacoes[id] || 0) + 1;
     for (const id of g.lote || []) if (!(g.avaliacoes || {})[id]) reservas[id] = (reservas[id] || 0) + 1;
   }
   const jaTem = new Set([...(eu.lote || []), ...Object.keys(eu.avaliacoes || {})]);
-  const pct = Number(process.env.LOTE_PERCENTUAL) > 0 ? Number(process.env.LOTE_PERCENTUAL) : 10;
-  const tamanho = Math.max(1, Math.ceil(ids.length * pct / 100));
+  const tamanho = Math.floor(Number(process.env.LOTE_TAMANHO)) > 0 ? Math.floor(Number(process.env.LOTE_TAMANHO)) : 10;
   return ids
     .filter((id) => !jaTem.has(id))
     .map((id) => ({ id, v: validacoes[id] || 0, r: reservas[id] || 0, s: Math.random() }))
@@ -118,13 +119,15 @@ function csv(gestores) {
     Object.keys(a.classificacao || {}).forEach((k) => { if (!chaves.includes(k)) chaves.push(k); });
   }));
   const cel = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
-  const linhas = [['Data', 'Gestor', 'E-mail', 'ID da solução', 'Solução', 'Parecer', 'Filtros alterados',
+  const PARECER = { aprovada: 'Aprovada', nao_aprovada: 'Não aprovada', nao_sei: 'Não sei' };
+  const linhas = [['Data', 'Gestor', 'E-mail', 'ID da solução', 'Solução', 'Parecer', 'Tempo (segundos)', 'Filtros alterados',
     ...chaves.map((k) => ROTULOS[k] || k), 'Comentário']];
   gestores.forEach((g) => Object.entries(g.avaliacoes || {}).forEach(([id, a]) => {
     linhas.push([
       new Date(a.em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
       g.nome, g.email, id, a.nomeSolucao,
-      a.decisao === 'aprovada' ? 'Aprovada' : 'Não aprovada',
+      PARECER[a.decisao] || a.decisao,
+      a.tempoSegundos ?? '',
       (a.alterados || []).map((k) => ROTULOS[k] || k).join(', '),
       ...chaves.map((k) => ((a.classificacao || {})[k] || []).join(', ')),
       a.comentario,

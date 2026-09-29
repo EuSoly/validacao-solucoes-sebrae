@@ -150,3 +150,20 @@ textarea,.field input{font-size:15px;color:var(--ink);border:1.5px solid var(--l
   .session{justify-content:space-between}
   .login .top,.login-body{padding-left:20px;padding-right:20px}
 }
+
+/* Não sei avaliar */
+.btn-ns{grid-column:1/-1;min-height:46px;font-size:15px;font-weight:600;color:var(--ink-2);background:var(--paper);border:1.5px dashed var(--chip-off-line);border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-ns:hover{border-color:var(--muted)}
+.panel-ns{background:var(--chip);border:1.5px solid var(--line-2)}
+.panel-ns .panel-title{color:var(--ink-2)}
+.panel-ns .btn-sm{color:var(--ink-2);border:1.5px solid var(--ink-2)}
+
+/* Textos de ajuda dos botões (hover ou foco pelo teclado) */
+[data-tip]{position:relative}
+[data-tip]::after{content:attr(data-tip);position:absolute;z-index:30;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);width:max-content;max-width:240px;padding:8px 11px;border-radius:8px;background:var(--ink);color:var(--paper);font-size:13px;font-weight:500;line-height:1.4;text-align:left;text-transform:none;letter-spacing:0;white-space:normal;box-shadow:0 6px 18px var(--shadow);pointer-events:none;opacity:0;visibility:hidden;transition:opacity .12s ease .35s}
+[data-tip-pos="bottom"]::after{bottom:auto;top:calc(100% + 8px)}
+[data-tip]:hover::after,[data-tip]:focus-visible::after{opacity:1;visibility:visible}
+[data-tip]:disabled::after{display:none}
+@media (hover:none){[data-tip]::after{display:none}}
+[data-tip-align="start"]::after{left:0;transform:none}
+[data-tip-align="end"]::after{left:auto;right:0;transform:none}
