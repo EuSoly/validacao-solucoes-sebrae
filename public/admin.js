@@ -1,7 +1,7 @@
 /* Painel da validação. Depende de filtros.js (FILTERS) e data.js (SOLUCOES). */
 (function(){
 var API='/api/admin', AUTH_KEY='validacao-admin';
-var auth=null, gestores=[], filtro='todas', busca='', abertas={}, carregando=false;
+var auth=null, gestores=[], lixeira=[], filtro='todas', busca='', abertas={}, carregando=false;
 var $=function(id){return document.getElementById(id);};
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
@@ -16,8 +16,8 @@ function fmtData(iso){if(!iso)return '—';try{return new Date(iso).toLocaleStri
 function readAuth(){try{return sessionStorage.getItem(AUTH_KEY);}catch(e){return null;}}
 function saveAuth(v){try{if(v)sessionStorage.setItem(AUTH_KEY,v);else sessionStorage.removeItem(AUTH_KEY);}catch(e){}}
 
-function api(method,body,raw){
-  return fetch(API+(raw?'?formato=csv':''),{method:method,cache:'no-store',headers:Object.assign({authorization:'Basic '+auth},body?{'content-type':'application/json'}:{}),body:body?JSON.stringify(body):undefined})
+function api(method,body,raw,qs){
+  return fetch(API+(raw?'?formato=csv':(qs||'')),{method:method,cache:'no-store',headers:Object.assign({authorization:'Basic '+auth},body?{'content-type':'application/json'}:{}),body:body?JSON.stringify(body):undefined})
     .then(function(r){
       if(r.status===401){sair('Sessão expirada ou senha alterada. Entre de novo.');throw new Error('401');}
       if(raw) return r.ok?r.blob():Promise.reject(new Error('Erro '+r.status));
@@ -124,7 +124,7 @@ function renderGestores(){
       '<td class="num-col">'+r.ok+'</td><td class="num-col">'+r.no+'</td><td class="num-col">'+r.ns+'</td><td class="num-col">'+fmtTempo(r.tm)+'</td><td>'+fmtData(r.ult)+'</td>'+
       '<td><div class="row-actions">'+
         '<button type="button" class="btn-mini" data-liberar="'+esc(r.g.email)+'"'+(r.pend?'':' disabled')+' data-tip-align="end" data-tip="Devolve para a fila as soluções do lote desta pessoa que ainda estão sem resposta. As respostas dadas continuam.">Liberar pendentes</button>'+
-        '<button type="button" class="btn-mini danger" data-remover="'+esc(r.g.email)+'" data-nome="'+esc(r.g.nome)+'" data-tip-align="end" data-tip="Apaga esta pessoa e todas as respostas dela. Use para limpar testes. Não pode ser desfeito.">Remover</button>'+
+        '<button type="button" class="btn-mini danger" data-remover="'+esc(r.g.email)+'" data-nome="'+esc(r.g.nome)+'" data-tip-align="end" data-tip="Move esta pessoa e todas as respostas dela para a lixeira. Dá para restaurar depois.">Remover</button>'+
       '</div></td></tr>';
   }).join('');
 }
@@ -180,10 +180,19 @@ function renderSolucoes(st){
   }).join(''):'<p class="empty" style="padding:14px 4px">Nenhuma solução neste filtro.</p>';
 }
 
+function renderLixeira(){
+  $('lixeira-vazia').hidden=lixeira.length>0;$('lixeira-wrap').hidden=!lixeira.length;
+  $('lixeira').innerHTML=lixeira.map(function(x){
+    return '<tr><td><b>'+esc(x.nome)+'</b><small>'+esc(x.email)+'</small></td><td class="num-col">'+x.respostas+'</td><td>'+fmtData(x.removidoEm)+'</td>'+
+      '<td><div class="row-actions"><button type="button" class="btn-mini" data-restaurar="'+esc(x.id)+'" data-tip-align="end" data-tip="Devolve esta pessoa ao painel com todas as respostas. Se ela já entrou de novo, as respostas são juntadas.">Restaurar</button>'+
+      '<button type="button" class="btn-mini danger" data-excluir="'+esc(x.id)+'" data-nome="'+esc(x.nome)+'" data-tip-align="end" data-tip="Apaga de vez esta pessoa e as respostas dela. Não pode ser desfeito.">Excluir definitivamente</button></div></td></tr>';
+  }).join('');
+}
+
 /* ---------- ações ---------- */
 function carregar(){
   if(carregando)return;carregando=true;$('erro').hidden=true;
-  api('GET').then(function(d){gestores=d.gestores||[];render();})
+  Promise.all([api('GET'),api('GET',null,false,'?lixeira=1')]).then(function(r){gestores=r[0].gestores||[];lixeira=r[1].itens||[];render();renderLixeira();})
     .catch(function(x){if(x.message==='401')return;$('erro').hidden=false;$('erro').textContent='Não foi possível carregar os dados: '+x.message;})
     .then(function(){carregando=false;});
 }
@@ -197,9 +206,19 @@ document.addEventListener('click',function(e){
     api('POST',{acao:'liberar',email:em}).then(carregar).catch(function(x){if(x.message!=='401')alert('Não foi possível liberar: '+x.message);t.disabled=false;});return;}
   t=e.target.closest('[data-remover]');
   if(t){var em2=t.getAttribute('data-remover');
-    if(!confirm('Remover '+t.getAttribute('data-nome')+' ('+em2+')? As avaliações dessa pessoa serão apagadas e isso não pode ser desfeito.'))return;
+    if(!confirm('Mover '+t.getAttribute('data-nome')+' ('+em2+') para a lixeira? As respostas saem do painel e do CSV, mas dá para restaurar pela Lixeira.'))return;
     t.disabled=true;
     api('POST',{acao:'remover',email:em2}).then(carregar).catch(function(x){if(x.message!=='401')alert('Não foi possível remover: '+x.message);t.disabled=false;});return;}
+});
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-restaurar]');
+  if(t){t.disabled=true;
+    api('POST',{acao:'restaurar',id:t.getAttribute('data-restaurar')}).then(carregar).catch(function(x){if(x.message!=='401')alert('Não foi possível restaurar: '+x.message);t.disabled=false;});return;}
+  t=e.target.closest('[data-excluir]');
+  if(t){
+    if(!confirm('Excluir '+t.getAttribute('data-nome')+' definitivamente? As respostas serão apagadas de vez e isso não pode ser desfeito.'))return;
+    t.disabled=true;
+    api('POST',{acao:'excluir_lixeira',id:t.getAttribute('data-excluir')}).then(carregar).catch(function(x){if(x.message!=='401')alert('Não foi possível excluir: '+x.message);t.disabled=false;});}
 });
 document.addEventListener('toggle',function(e){var d=e.target;if(d.classList&&d.classList.contains('sol'))abertas[d.getAttribute('data-id')]=d.open;},true);
 $('busca').addEventListener('input',function(e){busca=e.target.value;renderSolucoes();});

@@ -13,7 +13,10 @@
    GET  /api/admin?formato=csv            → todas as avaliações em CSV (Excel)
    POST /api/admin {acao:'entrar'}        → só confere o login
    POST /api/admin {acao:'liberar', email} → devolve para a fila as soluções do lote ainda sem resposta
-   POST /api/admin {acao:'remover', email} → apaga o gestor e as avaliações dele
+   POST /api/admin {acao:'remover', email} → move o gestor (com as avaliações) para a lixeira
+   GET  /api/admin?lixeira=1              → itens da lixeira
+   POST /api/admin {acao:'restaurar', id}  → devolve o gestor da lixeira (junta com registro novo do mesmo e-mail)
+   POST /api/admin {acao:'excluir_lixeira', id} → apaga de vez um item da lixeira
 
    Variáveis de ambiente opcionais (Netlify → Site configuration → Environment variables):
    EMAILS_PERMITIDOS  lista de e-mails separados por vírgula; vazio = qualquer e-mail entra
@@ -47,7 +50,15 @@ function adminOk(req) {
 
 async function admin(req, store, url) {
   if (!adminOk(req)) return json({ erro: 'Usuário ou senha inválidos.' }, 401);
+  const lixeira = getStore({ name: 'lixeira', consistency: 'strong' });
   if (req.method === 'GET') {
+    if (url.searchParams.get('lixeira')) {
+      const itens = (await todos(lixeira)).map((x) => ({
+        id: x.id, removidoEm: x.removidoEm, nome: x.gestor.nome, email: x.gestor.email,
+        respostas: Object.keys(x.gestor.avaliacoes || {}).length, lote: (x.gestor.lote || []).length,
+      })).sort((a, b) => String(b.removidoEm).localeCompare(String(a.removidoEm)));
+      return json({ itens });
+    }
     const gestores = await todos(store);
     return url.searchParams.get('formato') === 'csv' ? csv(gestores) : json({ gestores });
   }
@@ -55,6 +66,26 @@ async function admin(req, store, url) {
   let body;
   try { body = await req.json(); } catch { return json({ erro: 'Requisição inválida.' }, 400); }
   if (body.acao === 'entrar') return json({ ok: true });
+
+  // Lixeira: restaurar devolve o gestor (juntando com um registro novo do mesmo e-mail, se houver);
+  // excluir_lixeira apaga de vez.
+  if (body.acao === 'restaurar' || body.acao === 'excluir_lixeira') {
+    const id = str(body.id, 300);
+    const item = id && (await lixeira.get(id, { type: 'json' }));
+    if (!item) return json({ erro: 'Item não encontrado na lixeira.' }, 404);
+    if (body.acao === 'restaurar') {
+      const velho = item.gestor, k = chave(velho.email);
+      const atual = await store.get(k, { type: 'json' });
+      const g = atual
+        ? { ...atual, avaliacoes: { ...(velho.avaliacoes || {}), ...(atual.avaliacoes || {}) },
+            lote: [...new Set([...(velho.lote || []), ...(atual.lote || [])])] }
+        : velho;
+      await store.setJSON(k, g);
+    }
+    await lixeira.delete(id);
+    return json({ ok: true });
+  }
+
   const email = normEmail(body.email);
   const g = await store.get(chave(email), { type: 'json' });
   if (!g) return json({ erro: 'Gestor não encontrado.' }, 404);
@@ -65,8 +96,11 @@ async function admin(req, store, url) {
     return json({ ok: true, liberadas: antes - g.lote.length });
   }
   if (body.acao === 'remover') {
+    // guarda uma cópia na lixeira antes de apagar, para poder restaurar
+    const id = `${Date.now()}-${chave(email)}`;
+    await lixeira.setJSON(id, { id, removidoEm: new Date().toISOString(), gestor: g });
     await store.delete(chave(email));
-    return json({ ok: true });
+    return json({ ok: true, lixeira: id });
   }
   return json({ erro: 'Ação desconhecida.' }, 400);
 }
