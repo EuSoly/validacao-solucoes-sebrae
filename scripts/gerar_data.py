@@ -6,6 +6,7 @@ Requer: pip install openpyxl
 Confere cada valor de classificação contra as opções de public/filtros.js e
 para com erro se algum não existir lá (o modo de reclassificação não o mostraria).
 
+As soluções listadas em scripts/excluidas.json ficam fora do data.js.
 Os links de scripts/links_solucoes.json viram o botão "Acessar solução" no card.
 As descrições de scripts/descricoes_sebraetec.json (reescritas a partir das fichas
 técnicas do Sebraetec) substituem a descrição da planilha para os ids listados.
@@ -21,6 +22,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 FILTROS = RAIZ / 'public' / 'filtros.js'
 DATA = RAIZ / 'public' / 'data.js'
 DESCRICOES = RAIZ / 'scripts' / 'descricoes_sebraetec.json'
+EXCLUIDAS = RAIZ / 'scripts' / 'excluidas.json'  # soluções retiradas da validação
 LINKS = RAIZ / 'scripts' / 'links_solucoes.json'  # gerado por scripts/gerar_links.py
 NA = 'Não se aplica (institucional)'
 CABECALHO = '''/* SOLUÇÕES — gerado por scripts/gerar_data.py a partir da planilha da base final.
@@ -94,6 +96,12 @@ def main(xlsx):
     desconhecidos = set(descricoes) - {s['id'] for s in sols}
     if desconhecidos:
         sys.exit('descricoes_sebraetec.json tem ids que não estão na planilha: ' + ', '.join(sorted(desconhecidos)))
+
+    excluidas = {k for k in json.loads(EXCLUIDAS.read_text(encoding='utf-8')) if not k.startswith('_')} if EXCLUIDAS.exists() else set()
+    sem_match = excluidas - {s['id'] for s in sols}
+    if sem_match:
+        sys.exit('excluidas.json tem ids que não estão na planilha: ' + ', '.join(sorted(sem_match)))
+    sols = [s for s in sols if s['id'] not in excluidas]
 
     if erros:
         sys.exit('Valores que não existem em filtros.js: ' + repr(erros))
