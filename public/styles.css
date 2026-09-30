@@ -178,3 +178,14 @@ textarea,.field input{font-size:15px;color:var(--ink);border:1.5px solid var(--l
 .ficha-lista{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px;font-size:15px;line-height:1.5;color:var(--ink-2);max-width:68ch}
 .ficha-lista li::marker{color:var(--brand-ink);font-weight:700}
 .ficha-recebe{list-style:disc}
+
+/* Acessar solução */
+.btn-link{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;font-size:14px;font-weight:700;color:var(--brand-ink);background:var(--paper);border:1.5px solid var(--brand-line);border-radius:10px;text-decoration:none}
+.btn-link:hover{background:var(--brand-soft)}
+.btn-link:focus-visible{outline:3px solid #f2a900;outline-offset:2px}
+
+/* Tooltips dos filtros */
+.row-name .has-tip{cursor:help;text-decoration:underline dotted var(--chip-off-line);text-underline-offset:4px;align-self:flex-start}
+.chip[data-tip]{cursor:help}
+.chips [data-tip]::after,.row-name [data-tip]::after{max-width:300px;font-size:13.5px}
+.row-name .has-tip:focus-visible,.chip[data-tip]:focus-visible{outline:3px solid #f2a900;outline-offset:2px}

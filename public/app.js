@@ -44,16 +44,17 @@ function rowsHtml(){
     var sel=c.sel[f.key],isMat=f.key==='maturidade';
     var ch=!sameSet(sel,s.initial[f.key])&&(editing||c.decision==='reclassificada');
     var shown=c.decision==='reclassificada'?ordered(f,sel):s.initial[f.key];
-    h+='<div class="row'+(editing?' edit':'')+'"><div class="row-name"><b>'+esc(f.label)+'</b>';
+    var tips=(window.FILTER_TIPS&&FILTER_TIPS[f.key])||{};
+    h+='<div class="row'+(editing?' edit':'')+'"><div class="row-name"><b'+(tips._titulo?' class="has-tip" tabindex="0" data-tip="'+esc(tips._titulo)+'"':'')+'>'+esc(f.label)+'</b>';
     if(isMat) h+='<small>Passe o mouse sobre o nível para ver a definição</small>';
     if(ch) h+='<span class="tag-changed">Alterado</span>';
     h+='</div><div class="chips" role="group" aria-label="'+esc(f.label)+'">';
     if(editing){
-      f.options.forEach(function(o){h+='<button type="button" class="opt" aria-pressed="'+(sel.indexOf(o)!==-1)+'" data-toggle="'+f.key+'" data-opt="'+esc(o)+'"'+(LEVELS[o]?' data-level="'+esc(o)+'"':'')+'>'+esc(o)+'</button>';});
+      f.options.forEach(function(o){h+='<button type="button" class="opt" aria-pressed="'+(sel.indexOf(o)!==-1)+'" data-toggle="'+f.key+'" data-opt="'+esc(o)+'"'+(LEVELS[o]?' data-level="'+esc(o)+'"':(tips[o]?' data-tip="'+esc(tips[o])+'"':''))+'>'+esc(o)+'</button>';});
     }else{
       shown.forEach(function(o){
         if(isMat&&LEVELS[o]) h+='<button type="button" class="chip-level" data-level="'+esc(o)+'">'+esc(o)+'</button>';
-        else h+='<span class="chip">'+esc(o)+'</span>';
+        else h+='<span class="chip"'+(tips[o]?' tabindex="0" data-tip="'+esc(tips[o])+'"':'')+'>'+esc(o)+'</span>';
       });
     }
     h+='</div>';
@@ -70,6 +71,10 @@ function detalhesFicha(s){
   if(s.recebe&&s.recebe.length) h+='<div class="stack ficha-bloco"><span class="label">O que a empresa recebe</span><ul class="ficha-lista ficha-recebe">'+s.recebe.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
   return h;
 }
+function btnLink(s){
+  if(!s.link||!/^https?:\/\//.test(s.link)) return '';
+  return '<a class="btn-link" href="'+esc(s.link)+'" target="_blank" rel="noopener noreferrer" data-tip-align="start" data-tip="Abre a página da solução em uma nova aba.">Acessar solução <span aria-hidden="true">↗</span></a>';
+}
 function tagOrigem(s){
   var st=s.origem==='Sebraetec';
   return '<span class="origem '+(st?'origem-st':'origem-sb')+'" tabindex="0" data-tip="'+(st?'Serviço do Sebraetec, com ficha técnica e código Sebraetec.':'Solução do portfólio do Sebrae.')+'">'+(st?'Sebraetec':'Sebrae')+'</span>';
@@ -84,12 +89,12 @@ function decisionHtml(){
     h='<div class="stack" style="gap:12px"><span class="label">Parecer</span><div class="decide">'+
       '<button type="button" class="btn-big btn-ok" data-act="approve" data-tip="A classificação ao lado está correta. Salva e passa para a próxima.">'+ICON_OK+'Aprovada</button>'+
       '<button type="button" class="btn-big btn-no" data-act="reject" data-tip="Algum filtro está errado. Você vai corrigir a classificação ou explicar o motivo.">'+ICON_NO+'Não aprovada</button>'+
-      '<button type="button" class="btn-ns" data-act="dontknow" data-tip="Você não conhece esta solução o suficiente para avaliar. Ela vai para outro gestor.">'+ICON_NS+'Não sei avaliar</button></div>'+saveNote()+'</div>';
+      '<button type="button" class="btn-ns" data-act="dontknow" data-tip="Você não conhece esta solução o suficiente para avaliar. Ela vai para outro gestor.">'+ICON_NS+'Não conheço a solução</button></div>'+saveNote()+'</div>';
   }else if(d==='aprovada'){
     h='<div class="panel panel-ok"><div class="panel-row"><div><div class="panel-title">Você aprovou esta solução</div><p>Classificação mantida como está.</p></div></div>'+
       '<div class="panel-row">'+btnReset()+btnNext(nextLbl)+'</div>'+saveNote()+'</div>';
   }else if(d==='nao_sei'){
-    h='<div class="panel panel-ns"><div class="panel-row"><div><div class="panel-title">Você marcou que não sabe avaliar</div><p>Esta solução vai para outro gestor.</p></div></div>'+
+    h='<div class="panel panel-ns"><div class="panel-row"><div><div class="panel-title">Você marcou que não conhece esta solução</div><p>Esta solução vai para outro gestor.</p></div></div>'+
       '<div class="panel-row">'+btnReset()+btnNext(nextLbl)+'</div>'+saveNote()+'</div>';
   }else if(d==='editando'){
     h='<div class="panel panel-no"><p style="font-size:16px"><strong style="color:var(--no-ink)">Não aprovada.</strong> Ajuste os filtros ao lado: a classificação atual já vem marcada, é só corrigir o que estiver errado.</p>'+
@@ -130,7 +135,7 @@ function render(){
   sheetEl.innerHTML=header()+
     '<div class="body'+(editing?' editing':'')+'"><div class="col">'+
       '<div class="stack"><div style="display:flex;align-items:center;gap:12px"><span class="label">Solução</span><span class="num">Nº '+esc(s.num)+'</span>'+tagOrigem(s)+'</div><h1>'+esc(s.nome)+'</h1></div>'+
-      '<div class="stack"><span class="label">Descrição</span><p class="desc">'+esc(s.desc)+'</p></div>'+
+      '<div class="stack"><span class="label">Descrição</span><p class="desc">'+esc(s.desc)+'</p>'+btnLink(s)+'</div>'+
       '<div class="price"><span class="label">Valor máximo</span><strong>'+esc(s.preco)+'</strong></div>'+
       '<div id="decision">'+decisionHtml()+'</div>'+
     '</div><div class="col"><section class="stack" style="gap:10px" aria-labelledby="lbl-filtros">'+
@@ -232,6 +237,14 @@ setInterval(function(){
 
 function showLevel(el){var lv=el.getAttribute('data-level');if(hover===lv)return;hover=lv;var f=document.activeElement===el;renderRowsOnly();if(f){var n=sheetEl.querySelector('[data-level="'+CSS.escape(lv)+'"]');if(n)n.focus();}}
 function hideLevel(){if(hover===null)return;hover=null;var tip=sheetEl.querySelector('.tip');if(tip)tip.remove();}
+function alinhaTip(e){
+  var el=e.target.closest&&e.target.closest('[data-tip]');if(!el||!sheetEl.contains(el))return;
+  var r=el.getBoundingClientRect(),c=sheetEl.getBoundingClientRect(),meia=150-r.width/2;
+  if(r.right+meia>c.right-8)el.setAttribute('data-tip-align','end');
+  else if(r.left-meia<c.left+8)el.setAttribute('data-tip-align','start');
+}
+sheetEl.addEventListener('mouseover',alinhaTip);
+sheetEl.addEventListener('focusin',alinhaTip);
 sheetEl.addEventListener('mouseover',function(e){var el=e.target.closest('[data-level]');if(el)showLevel(el);});
 sheetEl.addEventListener('mouseout',function(e){var el=e.target.closest('[data-level]');if(el&&!(e.relatedTarget&&el.contains(e.relatedTarget)))hideLevel();});
 sheetEl.addEventListener('focusin',function(e){var el=e.target.closest('[data-level]');if(el)showLevel(el);});
@@ -269,7 +282,9 @@ document.getElementById('sair').addEventListener('click',function(){
   location.reload();
 });
 
-function pedirLote(){return post({acao:'lote',nome:gestor.nome,email:gestor.email,ids:SOLUCOES.map(function(s){return s.id;})});}
+// Soluções que aparecem sempre, em primeiro lugar, para todos os gestores (fora do sorteio).
+var FIXAS=['sol-190'];
+function pedirLote(){return post({acao:'lote',nome:gestor.nome,email:gestor.email,ids:SOLUCOES.map(function(s){return s.id;}).filter(function(id){return FIXAS.indexOf(id)===-1;})});}
 // Acrescenta ao deck as soluções do lote que ainda não estão nele (ignora ids que saíram da base).
 function aplicaLote(ids){
   var porId={},tem={};
@@ -287,7 +302,7 @@ function start(){
   sheetEl.innerHTML=header()+'<div class="done"><p>Carregando suas soluções…</p></div>';
   fetch(API+'?email='+encodeURIComponent(gestor.email),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error();return r.json();}).then(function(d){
     return (d.lote&&d.lote.length?Promise.resolve(d):pedirLote()).then(function(l){
-      aplicaLote(l.lote);
+      aplicaLote(FIXAS.concat(l.lote)); // fixas primeiro; o resto na ordem do sorteio
       var av=d.avaliacoes||{};
       deck.forEach(function(s,i){var m=av[s.id];if(!m)return;
         cards[i].ms=(Number(m.tempoSegundos)||0)*1000;
