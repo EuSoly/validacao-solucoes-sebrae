@@ -71,6 +71,8 @@ function detalhesFicha(s){
   if(s.recebe&&s.recebe.length) h+='<div class="stack ficha-bloco"><span class="label">O que a empresa recebe</span><ul class="ficha-lista ficha-recebe">'+s.recebe.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
   return h;
 }
+// Descrição com quebras de parágrafo (linha em branco separa parágrafos).
+function paragrafos(txt){return String(txt||'').split(/\n\s*\n/).map(function(p){return '<p class="desc">'+esc(p.trim())+'</p>';}).join('');}
 function btnLink(s){
   if(!s.link||!/^https?:\/\//.test(s.link)) return '';
   return '<a class="btn-link" href="'+esc(s.link)+'" target="_blank" rel="noopener noreferrer" data-tip-align="start" data-tip="Abre a página da solução em uma nova aba.">Acessar solução <span aria-hidden="true">↗</span></a>';
@@ -135,7 +137,7 @@ function render(){
   sheetEl.innerHTML=header()+
     '<div class="body'+(editing?' editing':'')+'"><div class="col">'+
       '<div class="stack"><div style="display:flex;align-items:center;gap:12px"><span class="label">Solução</span><span class="num">Nº '+esc(s.num)+'</span>'+tagOrigem(s)+'</div><h1>'+esc(s.nome)+'</h1></div>'+
-      '<div class="stack"><span class="label">Descrição</span><p class="desc">'+esc(s.desc)+'</p>'+btnLink(s)+'</div>'+
+      '<div class="stack"><span class="label">Descrição</span>'+paragrafos(s.desc)+btnLink(s)+'</div>'+
       '<div class="price"><span class="label">Valor máximo</span><strong>'+esc(s.preco)+'</strong></div>'+
       '<div id="decision">'+decisionHtml()+'</div>'+
     '</div><div class="col"><section class="stack" style="gap:10px" aria-labelledby="lbl-filtros">'+

@@ -9,7 +9,8 @@ para com erro se algum não existir lá (o modo de reclassificação não o most
 As soluções listadas em scripts/excluidas.json ficam fora do data.js.
 Os links de scripts/links_solucoes.json viram o botão "Acessar solução" no card.
 As descrições de scripts/descricoes_sebraetec.json (reescritas a partir das fichas
-técnicas do Sebraetec) substituem a descrição da planilha para os ids listados.
+técnicas do Sebraetec) e de scripts/descricoes_extras.json (escritas à mão) substituem a
+descrição da planilha para os ids listados.
 """
 import json
 import re
@@ -22,6 +23,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 FILTROS = RAIZ / 'public' / 'filtros.js'
 DATA = RAIZ / 'public' / 'data.js'
 DESCRICOES = RAIZ / 'scripts' / 'descricoes_sebraetec.json'
+EXTRAS = RAIZ / 'scripts' / 'descricoes_extras.json'  # descrições escritas à mão (qualquer solução)
 EXCLUIDAS = RAIZ / 'scripts' / 'excluidas.json'  # soluções retiradas da validação
 LINKS = RAIZ / 'scripts' / 'links_solucoes.json'  # gerado por scripts/gerar_links.py
 NA = 'Não se aplica (institucional)'
@@ -55,6 +57,8 @@ def maturidade(v):
 def main(xlsx):
     opts = opcoes_dos_filtros()
     descricoes = json.loads(DESCRICOES.read_text(encoding='utf-8')) if DESCRICOES.exists() else {}
+    if EXTRAS.exists():
+        descricoes.update(json.loads(EXTRAS.read_text(encoding='utf-8')))
     links = json.loads(LINKS.read_text(encoding='utf-8')) if LINKS.exists() else {}
     wb = openpyxl.load_workbook(xlsx, read_only=True, data_only=True)
     rows = list(wb['Base Final'].iter_rows(values_only=True))
