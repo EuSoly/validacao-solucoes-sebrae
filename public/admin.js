@@ -1,7 +1,7 @@
 /* Painel da validação. Depende de filtros.js (FILTERS) e data.js (SOLUCOES). */
 (function(){
 var API='/api/admin', AUTH_KEY='validacao-admin';
-var auth=null, gestores=[], lixeira=[], filtro='todas', busca='', abertas={}, carregando=false;
+var auth=null, gestores=[], lixeira=[], busca='', abertas={}, carregando=false;
 var $=function(id){return document.getElementById(id);};
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
@@ -52,7 +52,7 @@ function consolidar(){
   SOLUCOES.forEach(function(s){st[s.id]={aval:[],res:[]};});
   gestores.forEach(function(g){
     var av=g.avaliacoes||{};
-    Object.keys(av).forEach(function(id){if(st[id])st[id].aval.push({g:g,a:av[id]});});
+    Object.keys(av).forEach(function(id){if(st[id])st[id].aval.push({g:g,a:av[id],r:analisa(porId[id],av[id])});});
     (g.lote||[]).forEach(function(id){if(st[id]&&!av[id])st[id].res.push(g);});
   });
   SOLUCOES.forEach(function(s){
@@ -69,16 +69,6 @@ function consolidar(){
 }
 
 /* ---------- render ---------- */
-var FILTROS=[
-  {k:'todas',t:'Todas',f:function(){return true;}},
-  {k:'livre',t:'Sem ninguém',f:function(x){return x.estado==='livre';}},
-  {k:'reservada',t:'Reservadas, sem resposta',f:function(x){return x.estado==='reservada';}},
-  {k:'validada',t:'Validadas',f:function(x){return x.estado==='validada';}},
-  {k:'nao',t:'Com não aprovação',f:function(x){return x.no>0;}},
-  {k:'ns',t:'Com "não sei"',f:function(x){return x.ns>0;}},
-  {k:'div',t:'Com divergência',f:function(x){return x.div;}}
-];
-
 function render(){
   var st=consolidar(),total=SOLUCOES.length;
   var n={validada:0,reservada:0,livre:0},avTot=0,ok=0,no=0,ns=0,div=0,tempos=[];
@@ -143,42 +133,261 @@ function tags(x){
   return h;
 }
 
-function detalhe(s,x){
+/* ---------- análise das avaliações ---------- */
+// Compara a classificação original da solução com a que o gestor deixou, filtro a filtro.
+// Resultado: aprovada = acerto total; só adição = acerto parcial; qualquer remoção = erro;
+// não aprovada sem mexer em filtro = "semmud" (fica fora do percentual); não sei = "ns".
+function analisa(s,a){
+  var r={cat:{},add:[],rem:[],n:0};
+  if(a.decisao==='nao_sei'){r.res='ns';r.tipo='nenhuma';FILTERS.forEach(function(f){r.cat[f.key]='mantido';});return r;}
+  FILTERS.forEach(function(f){
+    var I=s.initial[f.key]||[],c=a.classificacao&&a.classificacao[f.key];
+    var N=(a.decisao==='nao_aprovada'&&Array.isArray(c)&&c.length)?c:I;
+    var ad=N.filter(function(o){return I.indexOf(o)===-1;}),rm=I.filter(function(o){return N.indexOf(o)===-1;});
+    r.cat[f.key]=ad.length&&rm.length?'ambos':ad.length?'add':rm.length?'rem':'mantido';
+    ad.forEach(function(o){r.add.push(f.key+'|'+o);});rm.forEach(function(o){r.rem.push(f.key+'|'+o);});
+  });
+  var tA=r.add.length>0,tR=r.rem.length>0;r.n=r.add.length+r.rem.length;
+  r.tipo=tA&&tR?'ambos':tA?'add':tR?'rem':'nenhuma';
+  r.res=a.decisao==='aprovada'?'total':(tR?'erro':(tA?'parcial':'semmud'));
+  return r;
+}
+
+var ROT={
+  parecer:{aprovada:'Aprovada',nao_aprovada:'Não aprovada',nao_sei:'Não conheço'},
+  resultado:{total:'Acerto total',parcial:'Acerto parcial (só adição)',erro:'Erro (houve remoção)',semmud:'Não aprovada sem mexer nos filtros'},
+  tipo:{add:'Só adição',rem:'Só remoção',ambos:'Adição e remoção'},
+  situacao:{livre:'Sem ninguém',reservada:'Reservada, sem resposta',validada:'Validada',nao:'Com não aprovação',ns:'Com "não conheço"',div:'Com divergência'},
+  origem:{Sebraetec:'Sebraetec',Sebrae:'Sebrae'}
+};
+var CAT_ROT={};FILTERS.forEach(function(f){CAT_ROT[f.key]=f.label;});
+var F={gestor:{},parecer:{},resultado:{},tipo:{},categoria:{},add:{},rem:{},situacao:{},origem:{}};
+var ordem='num';
+var EVAL_KEYS=['gestor','parecer','resultado','tipo','categoria','add','rem'];
+function sel(k){return Object.keys(F[k]).filter(function(v){return F[k][v];});}
+function ativo(k){return sel(k).length>0;}
+function nAtivos(){return Object.keys(F).reduce(function(n,k){return n+sel(k).length;},0);}
+function temFiltroAval(){return EVAL_KEYS.some(ativo);}
+
+function passaAval(v){
+  var r=v.r;
+  if(ativo('gestor')&&!F.gestor[v.g.email])return false;
+  if(ativo('parecer')&&!F.parecer[v.a.decisao])return false;
+  if(ativo('resultado')&&!F.resultado[r.res])return false;
+  if(ativo('tipo')&&!F.tipo[r.tipo])return false;
+  if(ativo('categoria')&&!sel('categoria').some(function(c){return r.cat[c]!=='mantido';}))return false;
+  if(ativo('add')&&!r.add.some(function(k){return F.add[k];}))return false;
+  if(ativo('rem')&&!r.rem.some(function(k){return F.rem[k];}))return false;
+  return true;
+}
+function passaSol(s,x){
+  if(ativo('origem')&&!F.origem[s.origem||'Sebrae'])return false;
+  if(ativo('situacao')&&!sel('situacao').some(function(k){
+    return k==='nao'?x.no>0:k==='ns'?x.ns>0:k==='div'?x.div:x.estado===k;}))return false;
+  var q=busca.trim().toLowerCase();
+  if(q&&s.nome.toLowerCase().indexOf(q)===-1&&s.num.indexOf(q.replace(/^0+/,''))===-1)return false;
+  return true;
+}
+
+// Aplica os filtros: devolve as soluções visíveis, cada uma com as avaliações que passaram.
+function filtrar(st){
+  var lista=[];
+  SOLUCOES.forEach(function(s){
+    var x=st[s.id];if(!passaSol(s,x))return;
+    var vs=x.aval.filter(passaAval);
+    if(temFiltroAval()&&!vs.length)return;
+    lista.push({s:s,x:x,vs:vs});
+  });
+  var cats=sel('categoria');
+  function alteracoes(it){return it.vs.reduce(function(n,v){
+    if(!cats.length)return n+v.r.n;
+    return n+v.r.add.concat(v.r.rem).filter(function(k){return cats.indexOf(k.split('|')[0])!==-1;}).length;},0);}
+  function cont(it,res){return it.vs.filter(function(v){return v.r.res===res;}).length;}
+  function taxa(it){var t=cont(it,'total'),p=cont(it,'parcial'),e=cont(it,'erro'),d=t+p+e;return d?(t+p*0.5)/d:2;}
+  var por={
+    num:function(a,b){return Number(a.s.num)-Number(b.s.num);},
+    alt:function(a,b){return alteracoes(b)-alteracoes(a)||Number(a.s.num)-Number(b.s.num);},
+    erro:function(a,b){return cont(b,'erro')-cont(a,'erro')||alteracoes(b)-alteracoes(a);},
+    assert:function(a,b){return taxa(a)-taxa(b)||Number(a.s.num)-Number(b.s.num);},
+    aval:function(a,b){return b.vs.length-a.vs.length||Number(a.s.num)-Number(b.s.num);}
+  };
+  lista.sort(por[ordem]);
+  lista.forEach(function(it){it.alt=alteracoes(it);});
+  return lista;
+}
+
+/* ---------- render da análise ---------- */
+function barra(partes){
+  var tot=partes.reduce(function(n,p){return n+p[2];},0);
+  return '<div class="meter meter-sm" role="img" aria-label="'+esc(partes.map(function(p){return p[1]+': '+p[2];}).join(', '))+'">'+
+    (tot?partes.filter(function(p){return p[2]>0;}).map(function(p){return '<span class="'+p[0]+'" style="flex:'+p[2]+'" title="'+esc(p[1])+': '+p[2]+'"></span>';}).join(''):'<span class="seg-livre" style="flex:1"></span>')+'</div>';
+}
+
+function renderAssert(lista){
+  var c={total:0,parcial:0,erro:0,semmud:0,ns:0};
+  lista.forEach(function(it){it.vs.forEach(function(v){c[v.r.res]++;});});
+  var base=c.total+c.parcial+c.erro;
+  var partes=[['seg-ok','Acerto total',c.total],['seg-parcial','Acerto parcial',c.parcial],['seg-erro','Erro',c.erro]];
+  $('assert').innerHTML='<div class="assert-head"><span class="label">Assertividade da classificação</span>'+
+    '<small>'+fmt(base)+' avaliações consideradas'+(nAtivos()?' com os filtros aplicados':'')+(c.semmud?' · '+c.semmud+' não aprovadas sem mexer nos filtros (fora do cálculo)':'')+(c.ns?' · '+c.ns+' "não conheço"':'')+'</small></div>'+
+    barra(partes)+
+    '<ul class="legend">'+partes.map(function(p){return '<li><i class="'+p[0]+'"></i>'+p[1]+' <b>'+pct(p[2],base)+'</b> <span class="muted">('+p[2]+')</span></li>';}).join('')+'</ul>';
+
+  // filtro a filtro
+  var h='';
+  FILTERS.forEach(function(f){
+    var k={mantido:0,add:0,rem:0,ambos:0},op={};
+    lista.forEach(function(it){it.vs.forEach(function(v){
+      if(v.r.res==='ns'||v.r.res==='semmud')return;
+      k[v.r.cat[f.key]]++;
+      (it.s.initial[f.key]||[]).forEach(function(o){var x=op[o]=op[o]||{m:0,a:0,r:0};if(v.r.rem.indexOf(f.key+'|'+o)===-1)x.m++;});
+      v.r.add.forEach(function(kk){if(kk.indexOf(f.key+'|')===0){var o=kk.slice(f.key.length+1);(op[o]=op[o]||{m:0,a:0,r:0}).a++;}});
+      v.r.rem.forEach(function(kk){if(kk.indexOf(f.key+'|')===0){var o=kk.slice(f.key.length+1);(op[o]=op[o]||{m:0,a:0,r:0}).r++;}});
+    });});
+    var d=k.mantido+k.add+k.rem+k.ambos,rem=k.rem+k.ambos;
+    var ops=Object.keys(op).sort(function(a,b){return (op[b].r+op[b].a)-(op[a].r+op[a].a)||op[b].m-op[a].m;});
+    h+='<details class="pf-cat"><summary><b>'+esc(f.label)+'</b>'+barra([['seg-ok','Mantido',k.mantido],['seg-parcial','Só adição',k.add],['seg-erro','Com remoção',rem]])+
+      '<span class="pf-num"><span class="ok">'+pct(k.mantido,d)+' mantido</span> · <span class="par">'+pct(k.add,d)+' só adição</span> · <span class="err">'+pct(rem,d)+' com remoção</span></span></summary>'+
+      (ops.length?'<table class="tabela tabela-op"><thead><tr><th>Opção</th><th class="num-col">Mantida</th><th class="num-col">Adicionada</th><th class="num-col">Removida</th></tr></thead><tbody>'+
+        ops.map(function(o){var x=op[o],key=esc(f.key+'|'+o);
+          return '<tr><td>'+esc(o)+'</td><td class="num-col">'+x.m+'</td>'+
+            '<td class="num-col">'+(x.a?'<button type="button" class="num-link" data-pick="add" data-key="'+key+'" data-tip-align="end" data-tip="Mostra as soluções em que esta opção foi adicionada.">'+x.a+'</button>':'0')+'</td>'+
+            '<td class="num-col">'+(x.r?'<button type="button" class="num-link err" data-pick="rem" data-key="'+key+'" data-tip-align="end" data-tip="Mostra as soluções em que esta opção foi removida.">'+x.r+'</button>':'0')+'</td></tr>';}).join('')+
+        '</tbody></table>':'<p class="empty">Sem avaliações para mostrar.</p>')+'</details>';
+  });
+  $('porfiltro').innerHTML=h;
+}
+
+function chipsAtivos(){
+  var h='';
+  Object.keys(F).forEach(function(k){sel(k).forEach(function(v){
+    var t;
+    if(k==='gestor'){var g=gestores.filter(function(x){return x.email===v;})[0];t='Gestor: '+(g?g.nome:v);}
+    else if(k==='categoria')t='Mexeu em: '+CAT_ROT[v];
+    else if(k==='add'||k==='rem'){var p=v.split('|');t=(k==='add'?'+ ':'− ')+p.slice(1).join('|')+' ('+CAT_ROT[p[0]]+')';}
+    else t=(ROT[k]&&ROT[k][v])||v;
+    h+='<button type="button" class="chip-ativo" data-tirar="'+esc(k)+'" data-valor="'+esc(v)+'" data-tip="Tira este filtro.">'+esc(t)+' <span aria-hidden="true">✕</span></button>';
+  });});
+  var n=nAtivos();
+  $('filtros-ativos').hidden=!n;
+  $('filtros-ativos').innerHTML=h+(n?'<button type="button" class="link-btn" id="limpar-ativos">Limpar tudo</button>':'');
+  $('n-filtros').hidden=!n;$('n-filtros').textContent=n;
+}
+
+function difHtml(s,v){
+  var h='';
+  FILTERS.forEach(function(f){
+    if(v.r.cat[f.key]==='mantido')return;
+    var ad=v.r.add.filter(function(k){return k.indexOf(f.key+'|')===0;}).map(function(k){return k.slice(f.key.length+1);});
+    var rm=v.r.rem.filter(function(k){return k.indexOf(f.key+'|')===0;}).map(function(k){return k.slice(f.key.length+1);});
+    h+='<div class="dif"><strong>'+esc(f.label)+':</strong> '+rm.map(function(o){return '<span class="d-rem">− '+esc(o)+'</span>';}).join(' ')+' '+ad.map(function(o){return '<span class="d-add">+ '+esc(o)+'</span>';}).join(' ')+'</div>';
+  });
+  return h;
+}
+var RES_TAG={total:['tag-ok','Acerto total'],parcial:['tag-parcial','Acerto parcial'],erro:['tag-no','Erro'],semmud:['tag-ns','Sem mudança nos filtros']};
+
+function detalhe(s,x,vs){
   var h='';
   if(!x.aval.length) h+='<p class="empty">Ninguém avaliou ainda.</p>';
-  x.aval.forEach(function(v){
+  else if(vs.length<x.aval.length) h+='<p class="save-note">Mostrando '+vs.length+' de '+x.aval.length+' avaliações (filtros aplicados).</p>';
+  vs.forEach(function(v){
     var a=v.a,okd=a.decisao==='aprovada',nsd=a.decisao==='nao_sei';
-    var tag=okd?['tag-ok','Aprovada']:(nsd?['tag-ns','Não sei']:['tag-no','Não aprovada']);
-    h+='<div class="aval"><div class="aval-head"><b>'+esc(v.g.nome)+'</b><span class="tag '+tag[0]+'">'+tag[1]+'</span><time>'+fmtData(a.em)+'</time><span class="tempo'+(medido(a)?'':' tempo-nm')+'">'+ICON_TEMPO+'Tempo: '+tempoTxt(a)+'</span></div>';
-    if(a.decisao==='nao_aprovada'){
-      var alt=Array.isArray(a.alterados)?a.alterados:[];
-      FILTERS.forEach(function(f){if(alt.indexOf(f.key)===-1)return;
-        var novo=(a.classificacao&&a.classificacao[f.key])||[];
-        h+='<div><strong>'+esc(f.label)+':</strong> <s>'+esc(s.initial[f.key].join(', '))+'</s> → '+esc(novo.join(', '))+'</div>';});
-      if(!alt.length) h+='<div>Não aprovou, sem alterar os filtros.</div>';
-    }
+    var tag=okd?['tag-ok','Aprovada']:(nsd?['tag-ns','Não conheço']:['tag-no','Não aprovada']);
+    var rt=RES_TAG[v.r.res];
+    h+='<div class="aval"><div class="aval-head"><b>'+esc(v.g.nome)+'</b><span class="tag '+tag[0]+'">'+tag[1]+'</span>'+
+      (rt&&!okd?'<span class="tag '+rt[0]+'">'+rt[1]+'</span>':'')+
+      '<time>'+fmtData(a.em)+'</time><span class="tempo'+(medido(a)?'':' tempo-nm')+'">'+ICON_TEMPO+'Tempo: '+tempoTxt(a)+'</span></div>';
+    if(a.decisao==='nao_aprovada') h+=difHtml(s,v)||'<div>Não aprovou, sem alterar os filtros.</div>';
     if(a.comentario) h+='<div><strong>Comentário:</strong> '+esc(a.comentario)+'</div>';
     h+='</div>';
   });
-  if(x.res.length) h+='<p class="save-note">No lote de: '+x.res.map(function(g){return esc(g.nome);}).join(', ')+' (sem resposta ainda)</p>';
+  if(x.res.length&&!temFiltroAval()) h+='<p class="save-note">No lote de: '+x.res.map(function(g){return esc(g.nome);}).join(', ')+' (sem resposta ainda)</p>';
   return h;
 }
 
 function renderSolucoes(st){
   st=st||consolidar();
-  var f=FILTROS.filter(function(x){return x.k===filtro;})[0];
-  $('filtros').innerHTML=FILTROS.map(function(x){
-    var c=SOLUCOES.filter(function(s){return x.f(st[s.id]);}).length;
-    return '<button type="button" class="opt" data-filtro="'+x.k+'" aria-pressed="'+(x.k===filtro)+'" data-tip="Mostra só as soluções: '+esc(x.t.toLowerCase())+'.">'+esc(x.t)+'<span class="n">'+c+'</span></button>';
-  }).join('');
-  var q=busca.trim().toLowerCase();
-  var lista=SOLUCOES.filter(function(s){return f.f(st[s.id])&&(!q||s.nome.toLowerCase().indexOf(q)!==-1||s.num.indexOf(q.replace(/^0+/,''))!==-1);});
-  $('solucoes').innerHTML=lista.length?lista.map(function(s){
-    var x=st[s.id];
-    return '<details class="sol" data-id="'+esc(s.id)+'"'+(abertas[s.id]?' open':'')+'><summary><span class="n-sol">Nº '+esc(s.num)+'</span><span class="nome">'+esc(s.nome)+' <span class="origem '+(s.origem==='Sebraetec'?'origem-st':'origem-sb')+'">'+esc(s.origem||'Sebrae')+'</span></span><span class="tags">'+tags(x)+'</span></summary>'+
-      '<div class="sol-body">'+detalhe(s,x)+'</div></details>';
-  }).join(''):'<p class="empty" style="padding:14px 4px">Nenhuma solução neste filtro.</p>';
+  var lista=filtrar(st);
+  chipsAtivos();
+  renderAssert(lista);
+  $('sol-contagem').textContent=lista.length+' de '+SOLUCOES.length+' soluções'+(nAtivos()||busca.trim()?' com os filtros aplicados':'');
+  $('solucoes').innerHTML=lista.length?lista.map(function(it){
+    var s=it.s,x=it.x;
+    var extra=(ordem==='alt'||ativo('categoria'))&&it.alt?'<span class="tag tag-alt">'+it.alt+' alteraç'+(it.alt>1?'ões':'ão')+'</span>':'';
+    return '<details class="sol" data-id="'+esc(s.id)+'"'+(abertas[s.id]?' open':'')+'><summary><span class="n-sol">Nº '+esc(s.num)+'</span><span class="nome">'+esc(s.nome)+' <span class="origem '+(s.origem==='Sebraetec'?'origem-st':'origem-sb')+'">'+esc(s.origem||'Sebrae')+'</span></span><span class="tags">'+extra+tags(x)+'</span></summary>'+
+      '<div class="sol-body">'+detalhe(s,x,temFiltroAval()?it.vs:x.aval)+'</div></details>';
+  }).join(''):'<p class="empty" style="padding:14px 4px">Nenhuma solução com esses filtros.</p>';
+  if(!$('painel-filtros').hidden)renderPainelFiltros(st);
 }
+
+/* ---------- menu lateral de filtros ---------- */
+function renderPainelFiltros(st){
+  st=st||consolidar();
+  var todas=[];SOLUCOES.forEach(function(s){st[s.id].aval.forEach(function(v){todas.push(v);});});
+  function conta(fn){return todas.filter(fn).length;}
+  function grupo(k,titulo,itens,abrir){
+    var n=sel(k).length;
+    return '<details class="fcat"'+(abrir||n?' open':'')+'><summary>'+esc(titulo)+(n?' <span class="badge">'+n+'</span>':'')+'</summary><div class="fopts">'+
+      (itens.length?itens.map(function(i){return '<label class="fopt"><input type="checkbox" data-f="'+esc(k)+'" value="'+esc(i[0])+'"'+(F[k][i[0]]?' checked':'')+'><span>'+esc(i[1])+'</span><small>'+i[2]+'</small></label>';}).join(''):'<p class="empty">Nada para filtrar ainda.</p>')+'</div></details>';
+  }
+  var gs=gestores.filter(function(g){return Object.keys(g.avaliacoes||{}).length;}).sort(function(a,b){return a.nome.localeCompare(b.nome);});
+  var h='';
+  h+=grupo('gestor','Gestor',gs.map(function(g){return [g.email,g.nome,conta(function(v){return v.g.email===g.email;})];}).filter(function(i){return i[2]>0||F.gestor[i[0]];}));
+  h+=grupo('parecer','Parecer',Object.keys(ROT.parecer).map(function(k){return [k,ROT.parecer[k],conta(function(v){return v.a.decisao===k;})];}));
+  h+=grupo('resultado','Resultado (assertividade)',Object.keys(ROT.resultado).map(function(k){return [k,ROT.resultado[k],conta(function(v){return v.r.res===k;})];}));
+  h+=grupo('tipo','Tipo de mudança',Object.keys(ROT.tipo).map(function(k){return [k,ROT.tipo[k],conta(function(v){return v.r.tipo===k;})];}));
+  h+=grupo('categoria','Categoria de filtro mexida',FILTERS.map(function(f){return [f.key,f.label,conta(function(v){return v.r.cat[f.key]!=='mantido';})];}));
+  ['add','rem'].forEach(function(k){
+    var n=sel(k).length;
+    h+='<details class="fcat"'+(n?' open':'')+'><summary>'+(k==='add'?'Opção adicionada':'Opção removida')+(n?' <span class="badge">'+n+'</span>':'')+'</summary><div class="fopts">';
+    var algum=false;
+    FILTERS.forEach(function(f){
+      var cnt={};todas.forEach(function(v){v.r[k].forEach(function(kk){if(kk.indexOf(f.key+'|')===0)cnt[kk]=(cnt[kk]||0)+1;});});
+      var ks=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a];});
+      if(!ks.length)return;algum=true;
+      var m=ks.filter(function(x){return F[k][x];}).length;
+      h+='<details class="fsub"'+(m?' open':'')+'><summary>'+esc(f.label)+' <small>'+ks.length+'</small></summary>'+
+        ks.map(function(x){return '<label class="fopt"><input type="checkbox" data-f="'+k+'" value="'+esc(x)+'"'+(F[k][x]?' checked':'')+'><span>'+esc(x.slice(f.key.length+1))+'</span><small>'+cnt[x]+'</small></label>';}).join('')+'</details>';
+    });
+    if(!algum)h+='<p class="empty">Nenhuma opção '+(k==='add'?'adicionada':'removida')+' ainda.</p>';
+    h+='</div></details>';
+  });
+  h+=grupo('situacao','Situação da solução',Object.keys(ROT.situacao).map(function(k){return [k,ROT.situacao[k],SOLUCOES.filter(function(s){var x=st[s.id];return k==='nao'?x.no>0:k==='ns'?x.ns>0:k==='div'?x.div:x.estado===k;}).length];}));
+  h+=grupo('origem','Origem',['Sebraetec','Sebrae'].map(function(k){return [k,k,SOLUCOES.filter(function(s){return (s.origem||'Sebrae')===k;}).length];}));
+  // mantém abertas as categorias que o usuário abriu
+  var abertasF={};document.querySelectorAll('#pf-corpo details').forEach(function(d,i){abertasF[i]=d.open;});
+  $('pf-corpo').innerHTML=h;
+  document.querySelectorAll('#pf-corpo details').forEach(function(d,i){if(abertasF[i])d.open=true;});
+}
+function abrirFiltros(){
+  renderPainelFiltros();
+  $('painel-filtros').hidden=false;$('fundo-filtros').hidden=false;$('abrir-filtros').setAttribute('aria-expanded','true');
+  $('painel-filtros').focus();
+}
+function fecharFiltros(){
+  $('painel-filtros').hidden=true;$('fundo-filtros').hidden=true;$('abrir-filtros').setAttribute('aria-expanded','false');
+  $('abrir-filtros').focus();
+}
+function limparFiltros(){Object.keys(F).forEach(function(k){F[k]={};});renderSolucoes();}
+
+$('abrir-filtros').addEventListener('click',abrirFiltros);
+$('fechar-filtros').addEventListener('click',fecharFiltros);
+$('ver-filtros').addEventListener('click',fecharFiltros);
+$('fundo-filtros').addEventListener('click',fecharFiltros);
+$('limpar-filtros').addEventListener('click',limparFiltros);
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('painel-filtros').hidden)fecharFiltros();});
+$('pf-corpo').addEventListener('change',function(e){
+  var t=e.target;if(!t.matches('input[data-f]'))return;
+  F[t.getAttribute('data-f')][t.value]=t.checked;renderSolucoes();
+});
+$('ordem').addEventListener('change',function(e){ordem=e.target.value;renderSolucoes();});
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-tirar]');
+  if(t){F[t.getAttribute('data-tirar')][t.getAttribute('data-valor')]=false;renderSolucoes();return;}
+  if(e.target.closest('#limpar-ativos')){limparFiltros();return;}
+  t=e.target.closest('[data-pick]');
+  if(t){var k=t.getAttribute('data-pick');F[k][t.getAttribute('data-key')]=true;renderSolucoes();$('sol-contagem').scrollIntoView({behavior:'smooth',block:'start'});}
+});
 
 function renderLixeira(){
   $('lixeira-vazia').hidden=lixeira.length>0;$('lixeira-wrap').hidden=!lixeira.length;
@@ -199,9 +408,7 @@ function carregar(){
 function abrir(){$('login').hidden=true;$('painel').hidden=false;carregar();}
 
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-filtro]');
-  if(t){filtro=t.getAttribute('data-filtro');renderSolucoes();return;}
-  t=e.target.closest('[data-liberar]');
+  var t=e.target.closest('[data-liberar]');
   if(t){var em=t.getAttribute('data-liberar');t.disabled=true;
     api('POST',{acao:'liberar',email:em}).then(carregar).catch(function(x){if(x.message!=='401')alert('Não foi possível liberar: '+x.message);t.disabled=false;});return;}
   t=e.target.closest('[data-remover]');

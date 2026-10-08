@@ -97,14 +97,15 @@ def main(xlsx):
     for s in sols:
         if links.get(s['id']):
             s['link'] = links[s['id']]  # botão "Acessar solução"
-    desconhecidos = set(descricoes) - {s['id'] for s in sols}
-    if desconhecidos:
-        sys.exit('descricoes_sebraetec.json tem ids que não estão na planilha: ' + ', '.join(sorted(desconhecidos)))
+    # A planilha pode encolher (soluções retiradas): ids que sumiram só geram aviso.
+    na_base = {s['id'] for s in sols}
+    sobras = sorted(set(descricoes) - na_base, key=lambda i: int(i.split('-')[1]))
+    if sobras:
+        print(f'aviso: {len(sobras)} descrições de soluções que não estão na planilha (ignoradas): ' + ', '.join(sobras))
 
     excluidas = {k for k in json.loads(EXCLUIDAS.read_text(encoding='utf-8')) if not k.startswith('_')} if EXCLUIDAS.exists() else set()
-    sem_match = excluidas - {s['id'] for s in sols}
-    if sem_match:
-        sys.exit('excluidas.json tem ids que não estão na planilha: ' + ', '.join(sorted(sem_match)))
+    if excluidas - na_base:
+        print('aviso: excluidas.json cita ids que já não estão na planilha: ' + ', '.join(sorted(excluidas - na_base)))
     sols = [s for s in sols if s['id'] not in excluidas]
 
     if erros:

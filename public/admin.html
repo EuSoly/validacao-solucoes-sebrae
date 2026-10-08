@@ -67,12 +67,48 @@
   <section class="card" aria-labelledby="sol-title">
     <div class="sol-head">
       <h2 id="sol-title">Soluções</h2>
-      <input type="search" id="busca" placeholder="Buscar por nome ou nº" aria-label="Buscar solução">
+      <div class="sol-tools">
+        <button type="button" class="btn-ghost btn-filtros" id="abrir-filtros" aria-controls="painel-filtros" aria-expanded="false" data-tip-pos="bottom" data-tip="Abre o menu com todos os filtros: gestor, parecer, resultado, categoria mexida, opções adicionadas ou removidas e mais.">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Filtros<span class="badge" id="n-filtros" hidden></span>
+        </button>
+        <label class="ordenar"><span>Ordenar</span>
+          <select id="ordem">
+            <option value="num">Nº da solução</option>
+            <option value="alt">Mais alterações</option>
+            <option value="erro">Mais erros</option>
+            <option value="assert">Menor assertividade</option>
+            <option value="aval">Mais avaliações</option>
+          </select>
+        </label>
+        <input type="search" id="busca" placeholder="Buscar por nome ou nº" aria-label="Buscar solução">
+      </div>
     </div>
-    <div class="chips filtros" id="filtros" role="group" aria-label="Filtrar soluções"></div>
+    <div class="ativos" id="filtros-ativos" hidden></div>
+
+    <div class="assert" id="assert" aria-live="polite"></div>
+    <details class="porfiltro" id="porfiltro-box">
+      <summary><span class="label">Assertividade por filtro</span><small>Abra uma categoria para ver opção por opção. Clique numa opção para filtrar as soluções.</small></summary>
+      <div id="porfiltro"></div>
+    </details>
+
+    <p class="save-note" id="sol-contagem"></p>
     <div id="solucoes" class="sol-list"></div>
   </section>
 </main>
+
+<div class="fundo-filtros" id="fundo-filtros" hidden></div>
+<aside class="painel-filtros" id="painel-filtros" hidden aria-labelledby="pf-title" tabindex="-1">
+  <div class="pf-head">
+    <h2 id="pf-title">Filtros</h2>
+    <button type="button" class="link-btn" id="fechar-filtros" aria-label="Fechar filtros">Fechar ✕</button>
+  </div>
+  <p class="save-note">Dentro de uma categoria, vale qualquer item marcado. Entre categorias, valem todas juntas.</p>
+  <div id="pf-corpo"></div>
+  <div class="pf-pe">
+    <button type="button" class="btn-ghost" id="limpar-filtros">Limpar filtros</button>
+    <button type="button" class="next-btn" id="ver-filtros">Ver soluções</button>
+  </div>
+</aside>
 
 <script src="filtros.js"></script>
 <script src="data.js"></script>
