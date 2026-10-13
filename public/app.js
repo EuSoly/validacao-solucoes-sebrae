@@ -14,6 +14,16 @@ var PARECER={aprovada:'Aprovada como está',ajustada:'Aprovada com ajustes',fora
 var MOTIVOS_NS=[['nao_conheco','Não conheço a solução'],['descricao','A descrição não basta para avaliar'],['industria','Não sei se é da indústria']];
 function motivoTxt(m){var x=MOTIVOS_NS.filter(function(p){return p[0]===m;})[0];return x?x[1]:MOTIVOS_NS[0][1];} // respostas antigas: "Não conheço"
 var DEF_VISIVEL={jornada:true,momento:true}; // filtros com a definição escrita ao lado de cada opção
+// Visualização dos filtros: "completa" escreve definições e instruções na tela; "simples" deixa tudo como dica ao passar o mouse.
+var MODO_KEY='validacao-modo',modo='completa';
+try{if(localStorage.getItem(MODO_KEY)==='simples')modo='simples';}catch(e){}
+function completa(){return modo==='completa';}
+var HINT_FILTROS='A classificação atual já vem marcada. Se algo estiver errado, marque ou desmarque as opções e escolha "Aprovada com ajustes".';
+function modoHtml(){
+  return '<div class="modo" role="group" aria-label="Visualização dos filtros">'+
+    [['completa','Completa','Mostra as definições e as instruções escritas na tela.'],['simples','Simplificada','Deixa as opções compactas; as definições aparecem ao passar o mouse.']].map(function(m){
+      return '<button type="button" data-act="modo" data-modo="'+m[0]+'" aria-pressed="'+(modo===m[0])+'" data-tip-pos="bottom" data-tip="'+m[2]+'">'+m[1]+'</button>';}).join('')+'</div>';
+}
 
 var deck=[], cards=[]; // deck: lote do gestor (soluções sorteadas pelo servidor, em ordem)
 var idx=0; // deck.length = tela final
@@ -47,12 +57,12 @@ function saveNote(){
 
 // Botão de uma opção do filtro (ficha ainda sem parecer: os filtros ficam sempre editáveis).
 function optHtml(f,o,sel,tips){
-  var L=LEVELS[o],def=DEF_VISIVEL[f.key]&&tips[o];
+  var L=LEVELS[o],def=completa()&&DEF_VISIVEL[f.key]&&tips[o];
   var h='<button type="button" class="opt'+(def?' opt-def':'')+(L?' opt-level':'')+'" aria-pressed="'+(sel.indexOf(o)!==-1)+'" data-toggle="'+f.key+'" data-opt="'+esc(o)+'"';
   if(L) h+=' data-level="'+esc(o)+'"';
   else if(tips[o]&&!def) h+=' data-tip="'+esc(tips[o])+'"';
   if(def) return h+'><b>'+esc(o)+'</b><small>'+esc(tips[o])+'</small></button>';
-  if(L) return h+'>'+esc(o)+'<small>'+esc(L.title.split(' · ')[1]||'')+'</small></button>';
+  if(L&&completa()) return h+'>'+esc(o)+'<small>'+esc(L.title.split(' · ')[1]||'')+'</small></button>';
   return h+'>'+esc(o)+'</button>';
 }
 
@@ -62,11 +72,13 @@ function rowsHtml(){
     var sel=c.sel[f.key],isMat=f.key==='maturidade';
     var ch=!sameSet(sel,s.initial[f.key]);
     var tips=(window.FILTER_TIPS&&FILTER_TIPS[f.key])||{};
-    h+='<div class="row'+(aberta?' edit':'')+'"><div class="row-name"><b'+(tips._titulo?' class="has-tip" tabindex="0" data-tip="'+esc(tips._titulo)+'"':'')+'>'+esc(f.label)+'</b>';
-    if(aberta) h+='<small class="multi">Marque todas que se aplicam</small>';
-    if(isMat) h+='<small>Passe o mouse sobre o nível para ver a definição</small>';
+    var tit=tips._titulo||'';
+    if(aberta&&!completa()) tit=(tit?tit+' ':'')+'Marque todas que se aplicam.'; // na simplificada a instrução vira dica
+    h+='<div class="row'+(aberta?' edit':'')+'"><div class="row-name"><b'+(tit?' class="has-tip" tabindex="0" data-tip="'+esc(tit)+'"':'')+'>'+esc(f.label)+'</b>';
+    if(aberta&&completa()) h+='<small class="multi">Marque todas que se aplicam</small>';
+    if(isMat&&completa()) h+='<small>Passe o mouse sobre o nível para ver a definição</small>';
     if(ch) h+='<span class="tag-changed">Alterado</span>';
-    h+='</div><div class="chips'+(aberta&&DEF_VISIVEL[f.key]?' chips-def':'')+'" role="group" aria-label="'+esc(f.label)+'">';
+    h+='</div><div class="chips'+(aberta&&completa()&&DEF_VISIVEL[f.key]?' chips-def':'')+'" role="group" aria-label="'+esc(f.label)+'">';
     if(aberta){
       f.options.forEach(function(o){h+=optHtml(f,o,sel,tips);});
     }else{
@@ -159,8 +171,8 @@ function render(){
       detalhesFicha(s)+
       '<div class="price"><span class="label">Valor máximo</span><strong>'+esc(s.preco)+'</strong></div>'+
     '</div><div class="col"><section class="stack" style="gap:10px" aria-labelledby="lbl-filtros">'+
-      '<div class="filters-head"><span class="label" id="lbl-filtros">Classificação nos filtros</span></div>'+
-      (aberta?'<p class="editing-hint">A classificação atual já vem marcada. Se algo estiver errado, marque ou desmarque as opções e escolha <b>Aprovada com ajustes</b>.</p>':'')+
+      '<div class="filters-head"><span class="label'+(aberta&&!completa()?' has-tip" tabindex="0" data-tip-align="start" data-tip="'+esc(HINT_FILTROS):'')+'" id="lbl-filtros">Classificação nos filtros</span>'+modoHtml()+'</div>'+
+      (aberta&&completa()?'<p class="editing-hint">A classificação atual já vem marcada. Se algo estiver errado, marque ou desmarque as opções e escolha <b>Aprovada com ajustes</b>.</p>':'')+
       '<div class="rows" id="rows">'+rowsHtml()+'</div></section></div>'+
       '<div class="decision-bar" id="decision">'+(aberta?parecerHtml():resultadoHtml())+'</div>'+
     '</div><footer class="foot"><span>Sebrae/PR · Mapeamento de Soluções para a Indústria</span><span>Ficha '+esc(s.num)+'</span></footer>';
@@ -253,6 +265,7 @@ document.addEventListener('click',function(e){
     if(!com) avisa('Explique no comentário por que a solução está fora do escopo.',true);
     else decide('fora_escopo');
   }
+  else if(act==='modo'){modo=a.getAttribute('data-modo');try{localStorage.setItem(MODO_KEY,modo);}catch(e){}render();var b=sheetEl.querySelector('[data-act="modo"][data-modo="'+modo+'"]');if(b)b.focus();}
   else if(act==='dontknow'){c.ns=true;c.aviso='';render();}
   else if(act==='ns-voltar'){c.ns=false;render();}
   else if(act==='ns-motivo'){c.motivo=a.getAttribute('data-motivo');c.sel=initialSel(sol());decide('nao_sei');}

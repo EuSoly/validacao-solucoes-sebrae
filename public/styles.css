@@ -216,3 +216,11 @@ textarea,.field input{font-size:15px;color:var(--ink);border:1.5px solid var(--l
 @media (max-width:900px){
   .decide,.ns-motivos{grid-template-columns:minmax(0,1fr)}
 }
+
+/* Seletor de visualização dos filtros (Completa / Simplificada) */
+.filters-head{align-items:center}
+.filters-head .has-tip{cursor:help;text-decoration:underline dotted var(--chip-off-line);text-underline-offset:4px}
+.modo{display:inline-flex;padding:3px;gap:2px;border:1.5px solid var(--line-2);border-radius:999px;background:var(--paper)}
+.modo button{min-height:30px;font:inherit;font-size:13px;font-weight:600;color:var(--muted);background:transparent;border:0;border-radius:999px;padding:0 12px;cursor:pointer}
+.modo button[aria-pressed="true"]{color:var(--brand-ink);background:var(--brand-soft)}
+.modo button:focus-visible{outline:3px solid #f2a900;outline-offset:2px}
