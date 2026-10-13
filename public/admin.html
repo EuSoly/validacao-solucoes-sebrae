@@ -47,8 +47,8 @@
 
   <section class="card" aria-labelledby="ges-title">
     <h2 id="ges-title">Gestores</h2>
-    <div class="table-wrap"><table class="tabela">
-      <thead><tr><th>Gestor</th><th class="num-col">Lote</th><th class="num-col">Respondidas</th><th class="num-col">Pendentes</th><th class="num-col">Aprovadas</th><th class="num-col">Não aprovadas</th><th class="num-col">Não sei</th><th class="num-col">Tempo médio</th><th>Última atividade</th><th><span class="sr-only">Ações</span></th></tr></thead>
+    <div class="table-wrap"><table class="tabela tabela-larga">
+      <thead><tr><th>Gestor</th><th class="num-col">Lote</th><th class="num-col">Respondidas</th><th class="num-col">Pendentes</th><th class="num-col">Aprovadas</th><th class="num-col">Com ajustes</th><th class="num-col">Fora do escopo</th><th class="num-col">Não sei</th><th class="num-col">Tempo médio</th><th>Última atividade</th><th><span class="sr-only">Ações</span></th></tr></thead>
       <tbody id="gestores"></tbody>
     </table></div>
     <p class="empty" id="gestores-vazio" hidden>Nenhum gestor entrou ainda.</p>
@@ -57,7 +57,7 @@
   <section class="card" aria-labelledby="lix-title">
     <h2 id="lix-title">Lixeira</h2>
     <p class="save-note">Gestores removidos ficam aqui com todas as respostas e podem ser restaurados.</p>
-    <div class="table-wrap" id="lixeira-wrap"><table class="tabela">
+    <div class="table-wrap" id="lixeira-wrap"><table class="tabela tabela-media tabela-lix">
       <thead><tr><th>Gestor</th><th class="num-col">Respostas</th><th>Removido em</th><th><span class="sr-only">Ações</span></th></tr></thead>
       <tbody id="lixeira"></tbody>
     </table></div>
@@ -93,6 +93,15 @@
 
     <p class="save-note" id="sol-contagem"></p>
     <div id="solucoes" class="sol-list"></div>
+  </section>
+
+  <section class="card" id="fora-base-box" hidden aria-labelledby="fb-title">
+    <h2 id="fb-title">Avaliações de soluções que saíram da base</h2>
+    <p class="save-note">Soluções retiradas da validação depois de avaliadas (<span id="fora-base-n"></span>). Não entram na cobertura nem na assertividade, mas continuam no CSV.</p>
+    <div class="table-wrap"><table class="tabela tabela-media tabela-fb">
+      <thead><tr><th>Nº</th><th>Solução</th><th>Gestor</th><th>Parecer</th><th>Comentário</th></tr></thead>
+      <tbody id="fora-base"></tbody>
+    </table></div>
   </section>
 </main>
 

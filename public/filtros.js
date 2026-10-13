@@ -2,16 +2,21 @@
    FILTROS — Validação de Soluções
    - FILTERS: filtros e opções possíveis (modo de reclassificação)
    - LEVELS: definições dos níveis de maturidade (tooltip)
+   - UNIFICAR: opções antigas que viraram uma só (pares espelho); vale para a planilha
+     (scripts/gerar_data.py) e para avaliações gravadas antes da unificação
    As soluções ficam em data.js, gerado da planilha por scripts/gerar_data.py.
    ===================================================================== */
 var NA='Não se aplica (institucional)';
 var FILTERS=[
   {key:'segmento',label:'Segmento',options:['Alimentos e Bebidas','Construção Civil','Madeira e Móveis','Metal Mecânica','Têxtil e Vestuário','Multi segmento','Setorial','Fora do escopo']},
   {key:'jornada',label:'Jornada',options:['Administrativa','Produção',NA]},
-  {key:'area',label:'Área principal',options:['Automação e Digitalização','Automação e Digitalização Industrial','Comercial','Compliance e Obrigações da Empresa','Custos Industriais da Produção','ESG','ESG Operacional e Segurança','Engenharia de Processos','Gestão Estratégica','Gestão Financeira e Controladoria','Gestão de Negócios','Gestão de Operações','Gestão de Operações — Gerencial','Gestão de Pessoas','Inovação','Inovação aplicada à produção','Logística Interna e Materiais','Marketing','PCP e Planejamento da Produção','Qualidade Industrial',NA]},
+  {key:'area',label:'Área principal',options:['Automação e Digitalização','Comercial','Compliance e Obrigações da Empresa','Custos Industriais da Produção','ESG','Engenharia de Processos','Gestão Estratégica','Gestão Financeira e Controladoria','Gestão de Negócios','Gestão de Operações','Gestão de Pessoas','Inovação','Logística Interna e Materiais','Marketing','PCP e Planejamento da Produção','Qualidade Industrial',NA]},
   {key:'maturidade',label:'Maturidade empresarial',options:['Nível 1','Nível 2','Nível 3','Nível 4','Nível 5',NA]},
   {key:'momento',label:'Momento empresarial',options:['Para Quem Quer Ganhar Mercado','Para Quem Quer Ganhar Competitividade','Para Quem Quer Inovar e Digitalizar','Para Quem Quer ESG','Não se aplica (solução institucional)']}
 ];
+var UNIFICAR={"Automação e Digitalização Industrial": "Automação e Digitalização", "ESG Operacional e Segurança": "ESG", "Gestão de Operações — Gerencial": "Gestão de Operações", "Inovação aplicada à produção": "Inovação"};
+// Troca as opções antigas pelas unificadas, sem repetir.
+function unifica(lista){var r=[];(lista||[]).forEach(function(o){o=UNIFICAR[o]||o;if(r.indexOf(o)===-1)r.push(o);});return r;}
 var LEVELS={
   'Nível 1':{title:'Nível 1 · Empresa Formal Inicial',range:'até R$ 500 mil/ano',text:'Empresa recém formalizada, ainda buscando sobreviver e conseguir viver do negócio. A gestão é reativa e centralizada no empresário, sem controles financeiros estruturados, e a produção é artesanal ou improvisada, sem indicadores de desempenho. Os principais riscos são mortalidade do negócio, preço mal calculado, baixa qualidade e dependência total do operador.',signal:'ainda mistura dinheiro pessoal e da empresa na mesma conta.'},
   'Nível 2':{title:'Nível 2 · Empresa Estruturada Inicial',range:'R$ 500 mil a R$ 1,5 mi/ano',text:'Empresa que já parou de apagar incêndio e busca ganhar controle sobre a operação. Aparecem os primeiros controles financeiros e de estoque, com melhorias iniciais de layout e qualidade no chão de fábrica, ainda sem leitura clara de custos. O risco principal é crescer sem estrutura adequada, gerando sobrecarga, gargalos produtivos e perda de controle financeiro.',signal:'já separa PF e PJ, mas ainda não sabe o custo real de cada produto.'},
@@ -40,23 +45,19 @@ var FILTER_TIPS={
   "Não se aplica (institucional)": "Programas, editais ou iniciativas do Sebrae que não se encaixam em uma jornada específica."
  },
  "area": {
-  "_titulo": "Principal área da empresa que a solução desenvolve, conforme a matriz de maturidade de 22 áreas.",
-  "Automação e Digitalização": "Digitalização da gestão: sistemas de gestão (ERP), ferramentas digitais, dados e automação de rotinas administrativas.",
-  "Automação e Digitalização Industrial": "Digitalização do chão de fábrica: máquinas conectadas, sensores, coleta de dados de produção e tecnologias da Indústria 4.0.",
+  "_titulo": "Principal área da empresa que a solução desenvolve, conforme a matriz de maturidade.",
+  "Automação e Digitalização": "Digitalização da gestão e do chão de fábrica: sistemas de gestão (ERP), ferramentas digitais, dados, automação de rotinas, máquinas conectadas, sensores e tecnologias da Indústria 4.0.",
   "Comercial": "Vendas e relacionamento com clientes: processo comercial, prospecção, negociação, precificação e canais de venda.",
   "Compliance e Obrigações da Empresa": "Cumprimento de exigências legais, fiscais, trabalhistas, sanitárias e regulatórias, incluindo licenças, alvarás e registros.",
   "Custos Industriais da Produção": "Apuração e controle do custo de fabricação: custo por produto, rateios, perdas e formação de preço a partir da produção.",
-  "ESG": "Sustentabilidade na gestão: governança, práticas ambientais e sociais, relatórios e posicionamento ESG da empresa.",
-  "ESG Operacional e Segurança": "Sustentabilidade e segurança dentro da fábrica: normas regulamentadoras (NR), saúde e segurança do trabalho, resíduos e impacto ambiental da operação.",
+  "ESG": "Sustentabilidade na gestão e na fábrica: governança, práticas ambientais e sociais, relatórios ESG, normas regulamentadoras (NR), saúde e segurança do trabalho, resíduos e impacto ambiental da operação.",
   "Engenharia de Processos": "Desenho e melhoria dos processos produtivos: fluxo, layout, métodos, tempos e redução de desperdícios.",
   "Gestão Estratégica": "Direção da empresa: planejamento estratégico, metas, indicadores, governança e modelos de excelência em gestão.",
   "Gestão Financeira e Controladoria": "Finanças do negócio: fluxo de caixa, controles financeiros, custos gerenciais, crédito e análise de resultados.",
   "Gestão de Negócios": "Fundamentos do negócio: modelo de negócio, estruturação da empresa, formalização e visão geral de gestão.",
-  "Gestão de Operações": "Rotina operacional da produção: organização do trabalho na fábrica, produtividade, padronização e gestão visual.",
-  "Gestão de Operações — Gerencial": "Rotinas e processos administrativos: organização interna, fluxos de trabalho do escritório e gestão do dia a dia.",
+  "Gestão de Operações": "Rotina operacional da empresa, no escritório e na fábrica: organização do trabalho, fluxos e processos, produtividade, padronização e gestão visual.",
   "Gestão de Pessoas": "Pessoas na gestão: recrutamento, liderança, cultura, remuneração, desenvolvimento de equipes e clima organizacional.",
-  "Inovação": "Inovação no negócio: novos produtos, serviços e modelos de negócio, propriedade intelectual e acesso a ecossistemas de inovação.",
-  "Inovação aplicada à produção": "Inovação no chão de fábrica: novos processos, desenvolvimento de produto, prototipagem e melhorias tecnológicas na produção.",
+  "Inovação": "Inovação no negócio e na produção: novos produtos, serviços, processos e modelos de negócio, prototipagem, propriedade intelectual e acesso a ecossistemas de inovação.",
   "Logística Interna e Materiais": "Fluxo de materiais dentro da empresa: estoques, almoxarifado, armazenagem, movimentação e abastecimento da produção.",
   "Marketing": "Posicionamento e comunicação: marca, identidade visual, marketing digital, pesquisa de mercado e embalagem.",
   "PCP e Planejamento da Produção": "Planejamento e controle da produção: programação, sequenciamento, capacidade produtiva e cumprimento de prazos.",

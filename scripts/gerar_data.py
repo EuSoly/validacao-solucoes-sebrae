@@ -5,6 +5,7 @@ Requer: pip install openpyxl
 
 Confere cada valor de classificação contra as opções de public/filtros.js e
 para com erro se algum não existir lá (o modo de reclassificação não o mostraria).
+Antes disso troca as opções antigas pelas unificadas (UNIFICAR em public/filtros.js).
 
 As soluções listadas em scripts/excluidas.json ficam fora do data.js.
 Os links de scripts/links_solucoes.json viram o botão "Acessar solução" no card.
@@ -40,6 +41,20 @@ def opcoes_dos_filtros():
     return opts
 
 
+def unificar():
+    m = re.search(r'var UNIFICAR=(\{.*?\});', FILTROS.read_text(encoding='utf-8'))
+    return json.loads(m.group(1)) if m else {}
+
+
+def sem_repetir(vals, mapa):
+    r = []
+    for v in vals:
+        v = mapa.get(v, v)
+        if v not in r:
+            r.append(v)
+    return r
+
+
 def preco(v):
     if v in (None, ''):
         return 'Valor não informado'
@@ -56,6 +71,7 @@ def maturidade(v):
 
 def main(xlsx):
     opts = opcoes_dos_filtros()
+    mapa = unificar()
     descricoes = json.loads(DESCRICOES.read_text(encoding='utf-8')) if DESCRICOES.exists() else {}
     if EXTRAS.exists():
         descricoes.update(json.loads(EXTRAS.read_text(encoding='utf-8')))
@@ -77,6 +93,7 @@ def main(xlsx):
             'maturidade': maturidade(col(r, 'Maturidade Empresarial')),
             'momento': [str(col(r, 'Momento Empresarial')).strip()],
         }
+        initial = {k: sem_repetir(vals, mapa) for k, vals in initial.items()}
         for k, vals in initial.items():
             erros += [(sid, k, v) for v in vals if v not in opts[k]]
         sols.append({

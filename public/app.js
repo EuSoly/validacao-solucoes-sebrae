@@ -1,4 +1,4 @@
-/* UI — Validação de Soluções. Depende de filtros.js (FILTERS, LEVELS) e data.js (SOLUCOES). */
+/* UI — Validação de Soluções. Depende de filtros.js (FILTERS, LEVELS, FILTER_TIPS, unifica) e data.js (SOLUCOES). */
 (function(){
 var LOGO='logo.png';
 
@@ -6,7 +6,14 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 function sameSet(a,b){return a.length===b.length&&a.every(function(x){return b.indexOf(x)!==-1;});}
 function ordered(f,list){var inOpts=f.options.filter(function(o){return list.indexOf(o)!==-1;});var extra=list.filter(function(o){return f.options.indexOf(o)===-1;});return extra.concat(inOpts);}
 function initialSel(sol){var s={};FILTERS.forEach(function(f){s[f.key]=sol.initial[f.key].slice();});return s;}
-function freshCard(sol){return {decision:null,sel:initialSel(sol),comment:'',ms:0};} // ms: tempo com a ficha aberta
+// ms: tempo com a ficha aberta; ns: mostrando os motivos do "Não sei"; aviso: o que falta para registrar o parecer clicado
+function freshCard(sol){return {decision:null,sel:initialSel(sol),comment:'',motivo:'',ms:0,ns:false,aviso:''};}
+
+// Pareceres. "nao_aprovada" é da 1ª rodada (antes de existir "com ajustes") e só aparece em respostas antigas.
+var PARECER={aprovada:'Aprovada como está',ajustada:'Aprovada com ajustes',fora_escopo:'Fora do escopo',nao_sei:'Não sei avaliar',nao_aprovada:'Não aprovada'};
+var MOTIVOS_NS=[['nao_conheco','Não conheço a solução'],['descricao','A descrição não basta para avaliar'],['industria','Não sei se é da indústria']];
+function motivoTxt(m){var x=MOTIVOS_NS.filter(function(p){return p[0]===m;})[0];return x?x[1]:MOTIVOS_NS[0][1];} // respostas antigas: "Não conheço"
+var DEF_VISIVEL={jornada:true,momento:true}; // filtros com a definição escrita ao lado de cada opção
 
 var deck=[], cards=[]; // deck: lote do gestor (soluções sorteadas pelo servidor, em ordem)
 var idx=0; // deck.length = tela final
@@ -20,14 +27,14 @@ var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce
 function cur(){return cards[idx];}
 function sol(){return deck[idx];}
 function changed(i){var c=cards[i],s=deck[i];return FILTERS.filter(function(f){return !sameSet(c.sel[f.key]||[],s.initial[f.key]);});}
-function avaliadas(){return cards.filter(function(c){return c.decision==='aprovada'||c.decision==='reclassificada'||c.decision==='nao_sei';}).length;}
+function avaliadas(){return cards.filter(function(c){return c.decision!==null;}).length;}
 function firstPending(){return cards.findIndex(function(c){return c.decision===null;});}
 function hasEmpty(){var c=cur();return FILTERS.some(function(f){return c.sel[f.key].length===0;});}
-function semMudanca(){return !changed(idx).length&&!cur().comment.trim();} // não aprovada exige filtro alterado ou comentário
 
 var ICON_OK='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+var ICON_AJ='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
 var ICON_NS='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>';
-var ICON_NO='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+var ICON_NO='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>';
 
 function header(){return '<header class="top"><img src="'+LOGO+'" alt="Sebrae Indústria"><div class="top-txt"><b>Ficha de validação de produto</b><span>Mapeamento de Soluções para a Indústria</span></div></header>';}
 
@@ -38,21 +45,32 @@ function saveNote(){
   return '';
 }
 
+// Botão de uma opção do filtro (ficha ainda sem parecer: os filtros ficam sempre editáveis).
+function optHtml(f,o,sel,tips){
+  var L=LEVELS[o],def=DEF_VISIVEL[f.key]&&tips[o];
+  var h='<button type="button" class="opt'+(def?' opt-def':'')+(L?' opt-level':'')+'" aria-pressed="'+(sel.indexOf(o)!==-1)+'" data-toggle="'+f.key+'" data-opt="'+esc(o)+'"';
+  if(L) h+=' data-level="'+esc(o)+'"';
+  else if(tips[o]&&!def) h+=' data-tip="'+esc(tips[o])+'"';
+  if(def) return h+'><b>'+esc(o)+'</b><small>'+esc(tips[o])+'</small></button>';
+  if(L) return h+'>'+esc(o)+'<small>'+esc(L.title.split(' · ')[1]||'')+'</small></button>';
+  return h+'>'+esc(o)+'</button>';
+}
+
 function rowsHtml(){
-  var c=cur(),s=sol(),editing=c.decision==='editando',h='';
+  var c=cur(),s=sol(),aberta=c.decision===null,h='';
   FILTERS.forEach(function(f){
     var sel=c.sel[f.key],isMat=f.key==='maturidade';
-    var ch=!sameSet(sel,s.initial[f.key])&&(editing||c.decision==='reclassificada');
-    var shown=c.decision==='reclassificada'?ordered(f,sel):s.initial[f.key];
+    var ch=!sameSet(sel,s.initial[f.key]);
     var tips=(window.FILTER_TIPS&&FILTER_TIPS[f.key])||{};
-    h+='<div class="row'+(editing?' edit':'')+'"><div class="row-name"><b'+(tips._titulo?' class="has-tip" tabindex="0" data-tip="'+esc(tips._titulo)+'"':'')+'>'+esc(f.label)+'</b>';
+    h+='<div class="row'+(aberta?' edit':'')+'"><div class="row-name"><b'+(tips._titulo?' class="has-tip" tabindex="0" data-tip="'+esc(tips._titulo)+'"':'')+'>'+esc(f.label)+'</b>';
+    if(aberta) h+='<small class="multi">Marque todas que se aplicam</small>';
     if(isMat) h+='<small>Passe o mouse sobre o nível para ver a definição</small>';
     if(ch) h+='<span class="tag-changed">Alterado</span>';
-    h+='</div><div class="chips" role="group" aria-label="'+esc(f.label)+'">';
-    if(editing){
-      f.options.forEach(function(o){h+='<button type="button" class="opt" aria-pressed="'+(sel.indexOf(o)!==-1)+'" data-toggle="'+f.key+'" data-opt="'+esc(o)+'"'+(LEVELS[o]?' data-level="'+esc(o)+'"':(tips[o]?' data-tip="'+esc(tips[o])+'"':''))+'>'+esc(o)+'</button>';});
+    h+='</div><div class="chips'+(aberta&&DEF_VISIVEL[f.key]?' chips-def':'')+'" role="group" aria-label="'+esc(f.label)+'">';
+    if(aberta){
+      f.options.forEach(function(o){h+=optHtml(f,o,sel,tips);});
     }else{
-      shown.forEach(function(o){
+      ordered(f,sel).forEach(function(o){
         if(isMat&&LEVELS[o]) h+='<button type="button" class="chip-level" data-level="'+esc(o)+'">'+esc(o)+'</button>';
         else h+='<span class="chip"'+(tips[o]?' tabindex="0" data-tip="'+esc(tips[o])+'"':'')+'>'+esc(o)+'</span>';
       });
@@ -84,42 +102,42 @@ function tagOrigem(s){
 function btnReset(){return '<button type="button" class="btn-sm" data-act="reset" data-tip="Apaga sua resposta desta solução para você responder de novo.">Refazer avaliação</button>';}
 function btnNext(lbl){return '<button type="button" class="next-btn" data-act="next" data-tip="'+(idx===deck.length-1?'Vai para o resumo do seu lote.':'Avança para a próxima solução do lote.')+'">'+lbl+'</button>';}
 
-function decisionHtml(){
-  var c=cur(),d=c.decision,last=idx===deck.length-1,h='';
-  var nextLbl=last?'Concluir':'Próxima solução →';
-  if(d===null){
-    h='<div class="stack" style="gap:12px"><span class="label">Parecer</span><div class="decide">'+
-      '<button type="button" class="btn-big btn-ok" data-act="approve" data-tip="A classificação ao lado está correta. Salva e passa para a próxima.">'+ICON_OK+'Aprovada</button>'+
-      '<button type="button" class="btn-big btn-no" data-act="reject" data-tip="Algum filtro está errado. Você vai corrigir a classificação ou explicar o motivo.">'+ICON_NO+'Não aprovada</button>'+
-      '<button type="button" class="btn-ns" data-act="dontknow" data-tip="Você não conhece esta solução o suficiente para avaliar. Ela vai para outro gestor.">'+ICON_NS+'Não conheço a solução</button></div>'+saveNote()+'</div>';
-  }else if(d==='aprovada'){
-    h='<div class="panel panel-ok"><div class="panel-row"><div><div class="panel-title">Você aprovou esta solução</div><p>Classificação mantida como está.</p></div></div>'+
-      '<div class="panel-row">'+btnReset()+btnNext(nextLbl)+'</div>'+saveNote()+'</div>';
-  }else if(d==='nao_sei'){
-    h='<div class="panel panel-ns"><div class="panel-row"><div><div class="panel-title">Você marcou que não conhece esta solução</div><p>Esta solução vai para outro gestor.</p></div></div>'+
-      '<div class="panel-row">'+btnReset()+btnNext(nextLbl)+'</div>'+saveNote()+'</div>';
-  }else if(d==='editando'){
-    h='<div class="panel panel-no"><p style="font-size:16px"><strong style="color:var(--no-ink)">Não aprovada.</strong> Ajuste os filtros ao lado: a classificação atual já vem marcada, é só corrigir o que estiver errado.</p>'+
-      '<div class="field"><label for="comentario">Comentário</label><textarea id="comentario" rows="2" placeholder="Obrigatório se nenhum filtro for alterado. Ex.: atende melhor Alimentos e Bebidas">'+esc(c.comment)+'</textarea></div></div>';
-  }else{
-    var chs=changed(idx);
-    h='<div class="panel panel-no"><div class="panel-title">Você não aprovou · nova classificação registrada</div>';
-    if(chs.length) chs.forEach(function(f){h+='<p><strong>'+esc(f.label)+':</strong> <s style="color:var(--faint)">'+esc(sol().initial[f.key].join(', '))+'</s> → '+esc(ordered(f,c.sel[f.key]).join(', '))+'</p>';});
-    else h+='<p>Nenhum filtro foi alterado.</p>';
-    if(c.comment.trim()) h+='<p><strong>Comentário:</strong> '+esc(c.comment)+'</p>';
-    h+='<div class="panel-row">'+btnReset()+btnNext(nextLbl)+'</div>'+saveNote()+'</div>';
+// Ficha sem parecer: comentário, os três pareceres e o "Não sei avaliar" (com motivo).
+function parecerHtml(){
+  var c=cur(),h='<div class="parecer">';
+  if(c.ns){
+    h+='<span class="label">Por que você não sabe avaliar?</span><div class="ns-motivos">'+
+      MOTIVOS_NS.map(function(m){return '<button type="button" class="btn-motivo" data-act="ns-motivo" data-motivo="'+m[0]+'">'+esc(m[1])+'</button>';}).join('')+
+      '</div><div class="actions actions-start"><button type="button" class="btn-ghost" data-act="ns-voltar" data-tip-align="start" data-tip="Volta para os pareceres sem registrar nada.">Voltar</button></div>';
+    return h+saveNote()+'</div>';
   }
-  return h;
+  h+='<div class="field"><label for="comentario">Comentário</label><textarea id="comentario" rows="2" placeholder="Obrigatório quando você altera a classificação ou marca fora do escopo. Ex.: atende também Alimentos e Bebidas.">'+esc(c.comment)+'</textarea></div>'+
+    '<span class="label">Parecer</span><div class="decide">'+
+    '<button type="button" class="btn-big btn-ok" data-act="approve" data-tip-align="start" data-tip="A classificação está certa do jeito que veio. Salva e passa para a próxima.">'+ICON_OK+'Aprovada como está</button>'+
+    '<button type="button" class="btn-big btn-aj" data-act="adjust" data-tip="A solução é da indústria, mas a classificação precisa dos ajustes que você marcou nos filtros. Exige comentário.">'+ICON_AJ+'Aprovada com ajustes</button>'+
+    '<button type="button" class="btn-big btn-no" data-act="fora" data-tip-align="end" data-tip="A solução não é para a indústria e deve sair do mapa. Exige comentário.">'+ICON_NO+'Fora do escopo</button>'+
+    '<button type="button" class="btn-ns" data-act="dontknow" data-tip="Você não consegue avaliar esta solução. Diga o motivo; ela vai para outro gestor.">'+ICON_NS+'Não sei avaliar</button></div>';
+  if(changed(idx).length) h+='<p class="hint-aj">Você alterou a classificação. <button type="button" class="link-btn" data-act="undo" data-tip="Volta os filtros para a classificação original.">Desfazer alterações</button></p>';
+  if(c.aviso) h+='<p class="warn" role="alert">'+esc(c.aviso)+'</p>';
+  return h+saveNote()+'</div>';
 }
 
-function confirmBarHtml(){
-  var empty=hasEmpty(),nada=!empty&&semMudanca();
-  var aviso=empty?'Marque ao menos uma opção em cada filtro.':(nada?'Altere pelo menos um filtro ou explique no comentário por que não aprova.':'');
-  return '<div class="confirm-bar">'+(aviso?'<p class="warn">'+aviso+'</p>':'')+
-    '<div class="actions"><button type="button" class="btn-ghost" data-act="cancel" data-tip="Desfaz as mudanças e volta para as opções de parecer.">Cancelar</button>'+
-    '<button type="button" class="btn-confirm" data-act="confirm"'+(aviso?' disabled':'')+' data-tip="Salva a classificação corrigida e o comentário.">Confirmar nova classificação</button></div>'+saveNote()+'</div>';
+// Ficha já respondida: resumo do parecer.
+function resultadoHtml(){
+  var c=cur(),d=c.decision,nextLbl=idx===deck.length-1?'Concluir':'Próxima solução →',cls,tit,h='';
+  if(d==='aprovada'){cls='panel-ok';tit='Você aprovou esta solução como está';h='<p>Classificação mantida.</p>';}
+  else if(d==='nao_sei'){cls='panel-ns';tit='Você marcou que não sabe avaliar';h='<p><strong>Motivo:</strong> '+esc(motivoTxt(c.motivo))+'. Esta solução vai para outro gestor.</p>';}
+  else if(d==='fora_escopo'){cls='panel-no';tit='Você marcou esta solução como fora do escopo';}
+  else if(d==='ajustada'){cls='panel-aj';tit='Você aprovou com ajustes';}
+  else{cls='panel-no';tit='Você não aprovou · nova classificação registrada';}
+  if(d==='ajustada'||d==='fora_escopo'||d==='nao_aprovada'){
+    var chs=changed(idx);
+    chs.forEach(function(f){h+='<p><strong>'+esc(f.label)+':</strong> <s style="color:var(--faint)">'+esc(sol().initial[f.key].join(', '))+'</s> → '+esc(ordered(f,c.sel[f.key]).join(', '))+'</p>';});
+    if(!chs.length&&d!=='fora_escopo') h+='<p>Nenhum filtro foi alterado.</p>';
+  }
+  if(c.comment.trim()) h+='<p><strong>Comentário:</strong> '+esc(c.comment)+'</p>';
+  return '<div class="panel '+cls+'"><div class="panel-title">'+tit+'</div>'+h+'<div class="panel-row">'+btnReset()+btnNext(nextLbl)+'</div>'+saveNote()+'</div>';
 }
-function renderConfirmOnly(){var b=sheetEl.querySelector('.confirm-bar');if(b)b.outerHTML=confirmBarHtml();}
 
 function btnRestart(){return '<button type="button" class="btn-ghost" data-act="restart" data-tip="Volta para a primeira solução do lote para revisar suas respostas.">Revisar desde a primeira</button>';}
 function doneHtml(){
@@ -133,17 +151,18 @@ function doneHtml(){
 
 function render(){
   if(idx>=deck.length){sheetEl.innerHTML=doneHtml();renderNav();return;}
-  var s=sol(),c=cur(),editing=c.decision==='editando';
+  var s=sol(),c=cur(),aberta=c.decision===null;
   sheetEl.innerHTML=header()+
-    '<div class="body'+(editing?' editing':'')+'"><div class="col">'+
+    '<div class="body'+(aberta?' editing':'')+'"><div class="col">'+
       '<div class="stack"><div style="display:flex;align-items:center;gap:12px"><span class="label">Solução</span><span class="num">Nº '+esc(s.num)+'</span>'+tagOrigem(s)+'</div><h1>'+esc(s.nome)+'</h1></div>'+
       '<div class="stack"><span class="label">Descrição</span>'+paragrafos(s.desc)+btnLink(s)+'</div>'+
+      detalhesFicha(s)+
       '<div class="price"><span class="label">Valor máximo</span><strong>'+esc(s.preco)+'</strong></div>'+
-      '<div id="decision">'+decisionHtml()+'</div>'+
     '</div><div class="col"><section class="stack" style="gap:10px" aria-labelledby="lbl-filtros">'+
-      '<div class="filters-head"><span class="label" id="lbl-filtros">Classificação nos filtros</span>'+(editing?'<span class="editing-hint">Modo de reclassificação: clique para marcar ou desmarcar</span>':'')+'</div>'+
-      '<div class="rows" id="rows">'+rowsHtml()+'</div></section>'+(editing?'':detalhesFicha(s))+'</div>'+
-      (editing?confirmBarHtml():'')+
+      '<div class="filters-head"><span class="label" id="lbl-filtros">Classificação nos filtros</span></div>'+
+      (aberta?'<p class="editing-hint">A classificação atual já vem marcada. Se algo estiver errado, marque ou desmarque as opções e escolha <b>Aprovada com ajustes</b>.</p>':'')+
+      '<div class="rows" id="rows">'+rowsHtml()+'</div></section></div>'+
+      '<div class="decision-bar" id="decision">'+(aberta?parecerHtml():resultadoHtml())+'</div>'+
     '</div><footer class="foot"><span>Sebrae/PR · Mapeamento de Soluções para a Indústria</span><span>Ficha '+esc(s.num)+'</span></footer>';
   renderNav();
 }
@@ -162,7 +181,7 @@ function go(to,dir){
   if(animating||to<0||to>deck.length||to===idx) return;
   hover=null;saveError='';
   var c=idx<deck.length?cur():null;
-  if(c&&c.decision==='editando'){c.decision=null;c.sel=initialSel(sol());}
+  if(c){c.ns=false;c.aviso='';} // alterações nos filtros sem parecer ficam guardadas, mas não são salvas
   if(reduce){idx=to;render();window.scrollTo({top:0});return;}
   animating=true;renderNav();
   var outCls=dir>0?'out-left':'out-right',inCls=dir>0?'out-right':'out-left';
@@ -189,6 +208,7 @@ function persist(i,decisao){
   if(decisao!==null){
     var sel={};FILTERS.forEach(function(f){sel[f.key]=ordered(f,c.sel[f.key]);});
     avaliacao={decisao:decisao,nomeSolucao:s.nome,classificacao:sel,alterados:changed(i).map(function(f){return f.key;}),comentario:c.comment.trim(),tempoSegundos:Math.round(c.ms/1000)};
+    if(decisao==='nao_sei') avaliacao.motivoNaoSei=c.motivo;
   }
   var body={nome:gestor.nome,email:gestor.email,solucao:s.id,avaliacao:avaliacao};
   pendentes++;saving=true;saveError='';if(i===idx)render();
@@ -199,20 +219,44 @@ function persist(i,decisao){
   });
 }
 
+// Registra o parecer e passa para a próxima ficha.
+function decide(d){
+  var i=idx,c=cur();
+  c.decision=d;c.aviso='';c.ns=false;hover=null;render();persist(i,d);
+  setTimeout(function(){if(idx===i)go(i+1,1);},650);
+}
+function avisa(msg,campo){
+  cur().aviso=msg;render();
+  if(campo){var t=document.getElementById('comentario');if(t)t.focus();}
+}
+
 document.addEventListener('click',function(e){
   var t=e.target.closest('[data-toggle]');
   if(t){var c=cur(),k=t.getAttribute('data-toggle'),o=t.getAttribute('data-opt'),arr=c.sel[k];
-    c.sel[k]=arr.indexOf(o)!==-1?arr.filter(function(x){return x!==o;}):arr.concat([o]);
+    c.sel[k]=arr.indexOf(o)!==-1?arr.filter(function(x){return x!==o;}):arr.concat([o]);c.aviso='';
     render();var again=sheetEl.querySelector('[data-toggle="'+k+'"][data-opt="'+CSS.escape(o)+'"]');if(again)again.focus();return;}
   if(e.target.closest('#prev')){go(idx-1,-1);return;}
   if(e.target.closest('#next')){go(idx+1,1);return;}
   var a=e.target.closest('[data-act]');if(!a||animating)return;
-  var act=a.getAttribute('data-act'),i=idx,c=cur();
-  if(act==='approve'){c.decision='aprovada';c.sel=initialSel(sol());c.comment='';hover=null;render();persist(i,'aprovada');setTimeout(function(){if(idx===i)go(i+1,1);},650);}
-  else if(act==='reject'){c.decision='editando';hover=null;render();}
-  else if(act==='cancel'){c.decision=null;c.sel=initialSel(sol());c.comment='';render();}
-  else if(act==='dontknow'){c.decision='nao_sei';c.sel=initialSel(sol());c.comment='';hover=null;render();persist(i,'nao_sei');setTimeout(function(){if(idx===i)go(i+1,1);},650);}
-  else if(act==='confirm'){if(hasEmpty()||semMudanca())return;c.decision='reclassificada';hover=null;render();persist(i,'nao_aprovada');setTimeout(function(){if(idx===i)go(i+1,1);},650);}
+  var act=a.getAttribute('data-act'),i=idx,c=cur(),mudou=c&&changed(i).length>0,com=c&&c.comment.trim();
+  if(act==='approve'){
+    if(mudou) avisa('Você alterou a classificação. Para aprovar como está, desfaça as alterações; para manter as mudanças, escolha "Aprovada com ajustes".');
+    else decide('aprovada');
+  }
+  else if(act==='adjust'){
+    if(!mudou) avisa('Para aprovar com ajustes, marque ou desmarque as opções nos filtros ao lado.');
+    else if(hasEmpty()) avisa('Marque ao menos uma opção em cada filtro.');
+    else if(!com) avisa('Explique no comentário o porquê das alterações.',true);
+    else decide('ajustada');
+  }
+  else if(act==='fora'){
+    if(!com) avisa('Explique no comentário por que a solução está fora do escopo.',true);
+    else decide('fora_escopo');
+  }
+  else if(act==='dontknow'){c.ns=true;c.aviso='';render();}
+  else if(act==='ns-voltar'){c.ns=false;render();}
+  else if(act==='ns-motivo'){c.motivo=a.getAttribute('data-motivo');c.sel=initialSel(sol());decide('nao_sei');}
+  else if(act==='undo'){c.sel=initialSel(sol());c.aviso='';render();}
   else if(act==='reset'){var ms=c.ms;cards[i]=freshCard(sol());cards[i].ms=ms;hover=null;render();persist(i,null);}
   else if(act==='next'){go(i+1,1);}
   else if(act==='restart'){go(0,-1);}
@@ -226,7 +270,11 @@ document.addEventListener('click',function(e){
       .then(function(){sorteando=false;render();}); // idx já aponta para a 1ª nova, se houver
   }
 });
-document.addEventListener('input',function(e){if(e.target.id==='comentario'){cur().comment=e.target.value;renderConfirmOnly();}});
+document.addEventListener('input',function(e){
+  if(e.target.id!=='comentario')return;
+  var c=cur();c.comment=e.target.value;
+  if(c.aviso){c.aviso='';var w=sheetEl.querySelector('.parecer .warn[role="alert"]');if(w)w.remove();}
+});
 
 // Tempo por resposta: soma 1 s por segundo com a ficha na tela, a aba visível e alguém mexendo
 // (para de contar depois de 2 min sem mouse, teclado, toque ou rolagem).
@@ -234,7 +282,7 @@ var ultimaAtividade=Date.now();
 ['mousemove','keydown','pointerdown','scroll','touchstart'].forEach(function(ev){window.addEventListener(ev,function(){ultimaAtividade=Date.now();},{passive:true});});
 setInterval(function(){
   if(document.hidden||!gestor||idx>=deck.length||Date.now()-ultimaAtividade>120000)return;
-  var c=cur();if(c&&(c.decision===null||c.decision==='editando'))c.ms+=1000;
+  var c=cur();if(c&&c.decision===null)c.ms+=1000;
 },1000);
 
 function showLevel(el){var lv=el.getAttribute('data-level');if(hover===lv)return;hover=lv;var f=document.activeElement===el;renderRowsOnly();if(f){var n=sheetEl.querySelector('[data-level="'+CSS.escape(lv)+'"]');if(n)n.focus();}}
@@ -306,11 +354,12 @@ function start(){
     return (d.lote&&d.lote.length?Promise.resolve(d):pedirLote()).then(function(l){
       aplicaLote(FIXAS.concat(l.lote)); // fixas primeiro; o resto na ordem do sorteio
       var av=d.avaliacoes||{};
-      deck.forEach(function(s,i){var m=av[s.id];if(!m)return;
-        cards[i].ms=(Number(m.tempoSegundos)||0)*1000;
-        if(m.decisao==='aprovada')cards[i].decision='aprovada';
-        else if(m.decisao==='nao_sei')cards[i].decision='nao_sei';
-        else if(m.decisao==='nao_aprovada'){cards[i].decision='reclassificada';FILTERS.forEach(function(f){var v=m.classificacao&&m.classificacao[f.key];if(Array.isArray(v)&&v.length)cards[i].sel[f.key]=v.slice();});cards[i].comment=m.comentario||'';}
+      deck.forEach(function(s,i){var m=av[s.id];if(!m||!PARECER[m.decisao])return;
+        var c=cards[i];
+        c.ms=(Number(m.tempoSegundos)||0)*1000;
+        c.decision=m.decisao;c.comment=m.comentario||'';c.motivo=m.motivoNaoSei||'';
+        // a classificação gravada pode ter opções que depois foram unificadas
+        if(m.decisao!=='aprovada'&&m.decisao!=='nao_sei') FILTERS.forEach(function(f){var v=m.classificacao&&m.classificacao[f.key];if(Array.isArray(v)&&v.length)c.sel[f.key]=unifica(v);});
       });
       online=true;
       var p=firstPending();idx=p<0?deck.length:p;

@@ -146,3 +146,49 @@
   .sol-tools{width:100%}
 }
 .badge[hidden],.ativos[hidden]{display:none}
+
+/* ---------- Tabelas sem rolagem para o lado ----------
+   Os títulos quebram linha e, em tela estreita, cada linha vira um cartão
+   (o rótulo de cada célula vem do data-label que rotular() grava em admin.js). */
+.tabela th{white-space:normal;vertical-align:bottom;line-height:1.25}
+.tabela td small{overflow-wrap:anywhere}
+.tabela-larga .row-actions{flex-direction:column;align-items:stretch}
+.tabela-fb td:nth-child(2),.tabela-fb td:nth-child(5){min-width:180px}
+@media (max-width:1100px){
+  .tabela-larga thead{display:none}
+  .tabela-larga,.tabela-larga tbody{display:block}
+  .tabela-larga tr{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:12px 16px;padding:16px 2px;border-bottom:1px solid var(--line)}
+  .tabela-larga td{display:flex;flex-direction:column;gap:2px;padding:0;border:0;text-align:left}
+  .tabela-larga td.num-col{text-align:left;font-size:17px;font-weight:700}
+  .tabela-larga td::before{content:attr(data-label);font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .tabela-larga td:first-child,.tabela-larga td:last-child{grid-column:1/-1}
+  .tabela-larga td:first-child::before,.tabela-larga td:last-child::before{display:none}
+  .tabela-larga td:first-child b{font-size:16px}
+  .tabela-larga .row-actions{flex-direction:row;justify-content:flex-start}
+  .tabela-larga [data-tip]::after{left:0;right:auto;top:auto;bottom:calc(100% + 8px);transform:none}
+}
+@media (max-width:760px){
+  .tabela-media thead{display:none}
+  .tabela-media,.tabela-media tbody{display:block}
+  .tabela-media tr{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px 16px;padding:14px 2px;border-bottom:1px solid var(--line)}
+  .tabela-media td{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:0;border:0;text-align:left;min-width:0}
+  .tabela-media td::before{content:attr(data-label);font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .tabela-lix td:first-child,.tabela-lix td:last-child,.tabela-fb td:nth-child(2),.tabela-fb td:nth-child(5){grid-column:1/-1;min-width:0}
+  .tabela-lix td:first-child::before,.tabela-lix td:last-child::before{display:none}
+  .tabela-fb td:nth-child(5):empty{display:none}
+  .tabela-media .row-actions{justify-content:flex-start}
+  .tabela-media [data-tip]::after{left:0;right:auto;top:auto;bottom:calc(100% + 8px);transform:none}
+}
+@media (max-width:760px){
+  /* As dicas invisíveis ainda contam como largura e abriam rolagem dentro da tabela. */
+  .table-wrap [data-tip]::after{display:none}
+  .tabela-media .tag{white-space:normal}
+  .tabela-op thead{display:none}
+  .tabela-op,.tabela-op tbody{display:block}
+  .tabela-op tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 10px;padding:10px 2px;border-bottom:1px solid var(--line)}
+  .tabela-op td{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:0;border:0;text-align:left}
+  .tabela-op td:first-child{grid-column:1/-1;font-weight:600}
+  .tabela-op td+td::before{content:attr(data-label);font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  #porfiltro [data-tip]::after{display:none}
+  .pf-num{white-space:normal}
+}

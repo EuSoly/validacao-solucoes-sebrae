@@ -4,8 +4,11 @@
    POST /api/avaliacoes {acao:'lote', nome, email, ids}     → sorteia mais um lote para o gestor
    POST /api/avaliacoes {nome, email, solucao, avaliacao}   (avaliacao null = apagar)
 
+   Pareceres: aprovada (como está), ajustada (aprovada com ajustes), fora_escopo, nao_sei
+   (com motivoNaoSei) e nao_aprovada, que é da 1ª rodada e continua valendo nas respostas antigas.
+
    Lote: cada gestor recebe LOTE_TAMANHO soluções por vez, priorizando as com menos
-   validações (aprovada/não aprovada — "não sei" não conta), depois as menos reservadas
+   validações (todo parecer menos "não sei"), depois as menos reservadas
    em lotes ainda não respondidos; empates por sorteio.
 
    Painel (exige Authorization: Basic usuário:senha do admin):
@@ -26,6 +29,8 @@ import { getStore } from '@netlify/blobs';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ROTULOS = { segmento: 'Segmento', jornada: 'Jornada', area: 'Área principal', maturidade: 'Maturidade', momento: 'Momento empresarial' };
+const PARECER = { aprovada: 'Aprovada como está', ajustada: 'Aprovada com ajustes', fora_escopo: 'Fora do escopo', nao_sei: 'Não sei', nao_aprovada: 'Não aprovada (1ª rodada)' };
+const MOTIVO_NAO_SEI = { nao_conheco: 'Não conheço a solução', descricao: 'A descrição não basta', industria: 'Não sei se é da indústria' };
 
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
@@ -106,7 +111,7 @@ async function admin(req, store, url) {
 }
 
 function limpaAvaliacao(a) {
-  if (!['aprovada', 'nao_aprovada', 'nao_sei'].includes(a.decisao)) return null;
+  if (!PARECER[a.decisao]) return null;
   const classificacao = {};
   if (a.classificacao && typeof a.classificacao === 'object') {
     for (const k of Object.keys(a.classificacao).slice(0, 20)) classificacao[str(k, 50)] = strList(a.classificacao[k]);
@@ -118,6 +123,7 @@ function limpaAvaliacao(a) {
     alterados: strList(a.alterados),
     comentario: str(a.comentario, 2000).trim(),
     tempoSegundos: Math.min(86400, Math.max(0, Math.round(Number(a.tempoSegundos) || 0))),
+    ...(a.decisao === 'nao_sei' && MOTIVO_NAO_SEI[a.motivoNaoSei] ? { motivoNaoSei: a.motivoNaoSei } : {}),
     em: new Date().toISOString(),
   };
 }
@@ -153,14 +159,14 @@ function csv(gestores) {
     Object.keys(a.classificacao || {}).forEach((k) => { if (!chaves.includes(k)) chaves.push(k); });
   }));
   const cel = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
-  const PARECER = { aprovada: 'Aprovada', nao_aprovada: 'Não aprovada', nao_sei: 'Não sei' };
-  const linhas = [['Data', 'Gestor', 'E-mail', 'ID da solução', 'Solução', 'Parecer', 'Tempo (segundos)', 'Filtros alterados',
+  const linhas = [['Data', 'Gestor', 'E-mail', 'ID da solução', 'Solução', 'Parecer', 'Motivo do "não sei"', 'Tempo (segundos)', 'Filtros alterados',
     ...chaves.map((k) => ROTULOS[k] || k), 'Comentário']];
   gestores.forEach((g) => Object.entries(g.avaliacoes || {}).forEach(([id, a]) => {
     linhas.push([
       new Date(a.em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
       g.nome, g.email, id, a.nomeSolucao,
       PARECER[a.decisao] || a.decisao,
+      a.decisao === 'nao_sei' ? MOTIVO_NAO_SEI[a.motivoNaoSei] || MOTIVO_NAO_SEI.nao_conheco : '', // antes do motivo, o botão era "Não conheço"
       a.tempoSegundos ?? '',
       (a.alterados || []).map((k) => ROTULOS[k] || k).join(', '),
       ...chaves.map((k) => ((a.classificacao || {})[k] || []).join(', ')),

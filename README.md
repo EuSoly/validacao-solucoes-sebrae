@@ -6,11 +6,16 @@ Fichas para os gestores validarem a classificação das soluções (segmento, jo
 
 Cada gestor recebe um lote sorteado de 10 soluções. O sorteio prioriza as soluções com menos validações, depois as menos reservadas em lotes de outros gestores ainda não respondidos; empates são aleatórios. O lote fica gravado (o gestor volta e encontra as mesmas soluções) e, ao terminar, ele pode pedir outro em "Quero avaliar mais".
 
-Para cada solução o gestor responde:
+Os filtros da ficha já abrem editáveis, com a classificação atual marcada (multisseleção: "marque todas que se aplicam"; Jornada e Momento mostram a definição de cada opção). Para cada solução o gestor responde:
 
-- **Aprovada** — a classificação está certa.
-- **Não aprovada** — corrige os filtros; só confirma se alterar pelo menos um filtro ou escrever um comentário.
-- **Não sei avaliar** — fica registrado, mas não conta como validação: a solução volta para o sorteio e vai para outro gestor (nunca de novo para quem disse "não sei").
+- **Aprovada como está** — a classificação está certa. Se algum filtro foi alterado, pede para desfazer ou escolher "com ajustes".
+- **Aprovada com ajustes** — exige pelo menos um filtro alterado e um comentário explicando as mudanças.
+- **Fora do escopo** — a solução não é para a indústria; exige comentário.
+- **Não sei avaliar** — com motivo (não conheço a solução / a descrição não basta / não sei se é da indústria). Fica registrado, mas não conta como validação: a solução volta para o sorteio e vai para outro gestor (nunca de novo para quem disse "não sei").
+
+As respostas "Não aprovada" da 1ª rodada (antes de existir "com ajustes") continuam valendo e entram no painel junto com as "com ajustes".
+
+As áreas espelho foram unificadas (`UNIFICAR` em `public/filtros.js`): o gerador aplica na planilha e o painel aplica nas avaliações antigas.
 
 O app mede o tempo de cada resposta (só com a ficha na tela, a aba visível e alguém mexendo; pausa depois de 2 min parado). Aparece no painel e no CSV.
 
