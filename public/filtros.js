@@ -14,6 +14,12 @@ var FILTERS=[
   {key:'maturidade',label:'Maturidade empresarial',options:['Nível 1','Nível 2','Nível 3','Nível 4','Nível 5',NA]},
   {key:'momento',label:'Momento empresarial',options:['Para Quem Quer Ganhar Mercado','Para Quem Quer Ganhar Competitividade','Para Quem Quer Inovar e Digitalizar','Para Quem Quer ESG','Não se aplica (solução institucional)']}
 ];
+// Importância da solução para os clientes: escala Likert de 5 pontos, com ponto neutro no meio.
+// Fica fora de FILTERS porque não vem da planilha: é só a opinião do gestor, uma opção por ficha.
+var IMPORTANCIA={label:'Importância para os clientes',
+  titulo:'Quanto esta solução é importante para as indústrias que você atende.',
+  opcoes:[[1,'Nada importante'],[2,'Pouco importante'],[3,'Neutro'],[4,'Importante'],[5,'Muito importante']]};
+function importanciaTxt(n){var x=IMPORTANCIA.opcoes.filter(function(o){return o[0]===Number(n);})[0];return x?x[0]+' · '+x[1]:'';}
 var UNIFICAR={"Automação e Digitalização Industrial": "Automação e Digitalização", "ESG Operacional e Segurança": "ESG", "Gestão de Operações — Gerencial": "Gestão de Operações", "Inovação aplicada à produção": "Inovação"};
 // Troca as opções antigas pelas unificadas, sem repetir.
 function unifica(lista){var r=[];(lista||[]).forEach(function(o){o=UNIFICAR[o]||o;if(r.indexOf(o)===-1)r.push(o);});return r;}

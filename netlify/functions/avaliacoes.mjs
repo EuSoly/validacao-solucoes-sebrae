@@ -124,6 +124,8 @@ function limpaAvaliacao(a) {
     comentario: str(a.comentario, 2000).trim(),
     tempoSegundos: Math.min(86400, Math.max(0, Math.round(Number(a.tempoSegundos) || 0))),
     ...(a.decisao === 'nao_sei' && MOTIVO_NAO_SEI[a.motivoNaoSei] ? { motivoNaoSei: a.motivoNaoSei } : {}),
+    // importância para os clientes, escala de 1 a 5 (respostas anteriores à escala não têm)
+    ...([1, 2, 3, 4, 5].includes(Number(a.importancia)) && a.decisao !== 'nao_sei' ? { importancia: Number(a.importancia) } : {}),
     em: new Date().toISOString(),
   };
 }
@@ -160,7 +162,7 @@ function csv(gestores) {
   }));
   const cel = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
   const linhas = [['Data', 'Gestor', 'E-mail', 'ID da solução', 'Solução', 'Parecer', 'Motivo do "não sei"', 'Tempo (segundos)', 'Filtros alterados',
-    ...chaves.map((k) => ROTULOS[k] || k), 'Comentário']];
+    ...chaves.map((k) => ROTULOS[k] || k), 'Importância para os clientes (1 a 5)', 'Comentário']];
   gestores.forEach((g) => Object.entries(g.avaliacoes || {}).forEach(([id, a]) => {
     linhas.push([
       new Date(a.em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
@@ -170,6 +172,7 @@ function csv(gestores) {
       a.tempoSegundos ?? '',
       (a.alterados || []).map((k) => ROTULOS[k] || k).join(', '),
       ...chaves.map((k) => ((a.classificacao || {})[k] || []).join(', ')),
+      a.importancia ?? '',
       a.comentario,
     ]);
   }));

@@ -7,7 +7,8 @@ function sameSet(a,b){return a.length===b.length&&a.every(function(x){return b.i
 function ordered(f,list){var inOpts=f.options.filter(function(o){return list.indexOf(o)!==-1;});var extra=list.filter(function(o){return f.options.indexOf(o)===-1;});return extra.concat(inOpts);}
 function initialSel(sol){var s={};FILTERS.forEach(function(f){s[f.key]=sol.initial[f.key].slice();});return s;}
 // ms: tempo com a ficha aberta; ns: mostrando os motivos do "Não sei"; aviso: o que falta para registrar o parecer clicado
-function freshCard(sol){return {decision:null,sel:initialSel(sol),comment:'',motivo:'',ms:0,ns:false,aviso:''};}
+// imp: importância para os clientes (1 a 5), null enquanto o gestor não marca
+function freshCard(sol){return {decision:null,sel:initialSel(sol),imp:null,comment:'',motivo:'',ms:0,ns:false,aviso:''};}
 
 // Pareceres. "nao_aprovada" é da 1ª rodada (antes de existir "com ajustes") e só aparece em respostas antigas.
 var PARECER={aprovada:'Aprovada como está',ajustada:'Aprovada com ajustes',fora_escopo:'Fora do escopo',nao_sei:'Não sei avaliar',nao_aprovada:'Não aprovada'};
@@ -91,7 +92,27 @@ function rowsHtml(){
     if(isMat&&hover&&LEVELS[hover]){var L=LEVELS[hover];h+='<div class="tip" role="tooltip"><div class="tip-head"><b>'+esc(L.title)+'</b><span>'+esc(L.range)+'</span></div><p>'+esc(L.text)+'</p><p class="signal"><strong>Sinal prático:</strong> '+esc(L.signal)+'</p></div>';}
     h+='</div>';
   });
-  return h;
+  return h+importanciaHtml();
+}
+
+// Escala Likert da importância, na horizontal, logo abaixo do Momento empresarial. Uma opção só.
+function importanciaHtml(){
+  var c=cur(),aberta=c.decision===null;
+  if(!aberta&&!c.imp) return ''; // respostas anteriores à escala
+  var tit=IMPORTANCIA.titulo+(aberta&&!completa()?' Escolha uma opção.':'');
+  var h='<div class="row row-imp'+(aberta?' edit':'')+'"><div class="row-name"><b class="has-tip" tabindex="0" data-tip="'+esc(tit)+'">'+esc(IMPORTANCIA.label)+'</b>';
+  if(aberta&&completa()) h+='<small class="multi">Escolha uma opção</small>';
+  h+='</div>';
+  if(!aberta) return h+'<div class="chips"><span class="chip">'+esc(importanciaTxt(c.imp))+'</span></div></div>';
+  var ops=IMPORTANCIA.opcoes;
+  h+='<div class="likert-wrap"><div class="likert" role="radiogroup" aria-label="'+esc(IMPORTANCIA.label)+'">';
+  ops.forEach(function(o){
+    var on=c.imp===o[0];
+    h+='<button type="button" class="likert-opt" role="radio" aria-checked="'+on+'" aria-label="'+esc(o[0]+' · '+o[1])+'" data-imp="'+o[0]+'"><span class="likert-n">'+o[0]+'</span><span class="likert-txt">'+esc(o[1])+'</span></button>';
+  });
+  // no celular as caixas mostram só o número: as âncoras e a opção marcada vão embaixo
+  h+='</div><div class="likert-ancoras" aria-hidden="true"><span>'+esc(ops[0][1])+'</span><b>'+(c.imp?esc(importanciaTxt(c.imp)):'')+'</b><span>'+esc(ops[ops.length-1][1])+'</span></div>';
+  return h+'</div></div>';
 }
 
 // Etapas e entregas da ficha Sebraetec (quando houver), para o gestor entender o escopo.
@@ -147,6 +168,7 @@ function resultadoHtml(){
     chs.forEach(function(f){h+='<p><strong>'+esc(f.label)+':</strong> <s style="color:var(--faint)">'+esc(sol().initial[f.key].join(', '))+'</s> → '+esc(ordered(f,c.sel[f.key]).join(', '))+'</p>';});
     if(!chs.length&&d!=='fora_escopo') h+='<p>Nenhum filtro foi alterado.</p>';
   }
+  if(c.imp&&d!=='nao_sei') h+='<p><strong>'+esc(IMPORTANCIA.label)+':</strong> '+esc(importanciaTxt(c.imp))+'</p>';
   if(c.comment.trim()) h+='<p><strong>Comentário:</strong> '+esc(c.comment)+'</p>';
   return '<div class="panel '+cls+'"><div class="panel-title">'+tit+'</div>'+h+'<div class="panel-row">'+btnReset()+btnNext(nextLbl)+'</div>'+saveNote()+'</div>';
 }
@@ -221,6 +243,7 @@ function persist(i,decisao){
     var sel={};FILTERS.forEach(function(f){sel[f.key]=ordered(f,c.sel[f.key]);});
     avaliacao={decisao:decisao,nomeSolucao:s.nome,classificacao:sel,alterados:changed(i).map(function(f){return f.key;}),comentario:c.comment.trim(),tempoSegundos:Math.round(c.ms/1000)};
     if(decisao==='nao_sei') avaliacao.motivoNaoSei=c.motivo;
+    else if(c.imp) avaliacao.importancia=c.imp;
   }
   var body={nome:gestor.nome,email:gestor.email,solucao:s.id,avaliacao:avaliacao};
   pendentes++;saving=true;saveError='';if(i===idx)render();
@@ -247,17 +270,23 @@ document.addEventListener('click',function(e){
   if(t){var c=cur(),k=t.getAttribute('data-toggle'),o=t.getAttribute('data-opt'),arr=c.sel[k];
     c.sel[k]=arr.indexOf(o)!==-1?arr.filter(function(x){return x!==o;}):arr.concat([o]);c.aviso='';
     render();var again=sheetEl.querySelector('[data-toggle="'+k+'"][data-opt="'+CSS.escape(o)+'"]');if(again)again.focus();return;}
+  var im=e.target.closest('[data-imp]');
+  if(im){var n=Number(im.getAttribute('data-imp'));cur().imp=n;cur().aviso='';
+    render();var b=sheetEl.querySelector('[data-imp="'+n+'"]');if(b)b.focus();return;}
   if(e.target.closest('#prev')){go(idx-1,-1);return;}
   if(e.target.closest('#next')){go(idx+1,1);return;}
   var a=e.target.closest('[data-act]');if(!a||animating)return;
   var act=a.getAttribute('data-act'),i=idx,c=cur(),mudou=c&&changed(i).length>0,com=c&&c.comment.trim();
+  var semImp='Marque a importância da solução para os clientes, na escala de 1 a 5.';
   if(act==='approve'){
     if(mudou) avisa('Você alterou a classificação. Para aprovar como está, desfaça as alterações; para manter as mudanças, escolha "Aprovada com ajustes".');
+    else if(!c.imp) avisa(semImp);
     else decide('aprovada');
   }
   else if(act==='adjust'){
     if(!mudou) avisa('Para aprovar com ajustes, marque ou desmarque as opções nos filtros ao lado.');
     else if(hasEmpty()) avisa('Marque ao menos uma opção em cada filtro.');
+    else if(!c.imp) avisa(semImp);
     else if(!com) avisa('Explique no comentário o porquê das alterações.',true);
     else decide('ajustada');
   }
@@ -370,7 +399,7 @@ function start(){
       deck.forEach(function(s,i){var m=av[s.id];if(!m||!PARECER[m.decisao])return;
         var c=cards[i];
         c.ms=(Number(m.tempoSegundos)||0)*1000;
-        c.decision=m.decisao;c.comment=m.comentario||'';c.motivo=m.motivoNaoSei||'';
+        c.decision=m.decisao;c.comment=m.comentario||'';c.motivo=m.motivoNaoSei||'';c.imp=Number(m.importancia)||null;
         // a classificação gravada pode ter opções que depois foram unificadas
         if(m.decisao!=='aprovada'&&m.decisao!=='nao_sei') FILTERS.forEach(function(f){var v=m.classificacao&&m.classificacao[f.key];if(Array.isArray(v)&&v.length)c.sel[f.key]=unifica(v);});
       });

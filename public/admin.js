@@ -317,6 +317,7 @@ function detalhe(s,x,vs){
       '<time>'+fmtData(a.em)+'</time><span class="tempo'+(medido(a)?'':' tempo-nm')+'">'+ICON_TEMPO+'Tempo: '+tempoTxt(a)+'</span></div>';
     if(reclassifica(a.decisao)) h+=difHtml(s,v)||'<div>Reclassificou sem alterar os filtros.</div>';
     if(a.decisao==='nao_sei') h+='<div><strong>Motivo:</strong> '+esc(motivoNs(a))+'</div>';
+    if(a.importancia) h+='<div><strong>'+esc(IMPORTANCIA.label)+':</strong> '+esc(importanciaTxt(a.importancia))+'</div>';
     if(a.comentario) h+='<div><strong>Comentário:</strong> '+esc(a.comentario)+'</div>';
     h+='</div>';
   });
